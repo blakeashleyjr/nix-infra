@@ -18,8 +18,8 @@
         cmd: >
           nix run ./ 
           --extra-experimental-features "nix-command flakes" 
-          -- --flake .#{{ inventory_hostname}}
-          --disk-config /tmp/nixos-setup/disk-config.nix root@{{ inventory_hostname }}
+          -- --flake .#{{ inventory_hostname }}
+          --disk-config /tmp/nixos-setup/disk-config.nix root@{{ ansible_host }}
       args:
         executable: /run/current-system/sw/bin/bash
       delegate_to: localhost
@@ -32,7 +32,7 @@
 
     # - name: Update known_hosts file to remove old host key
     #   ansible.builtin.shell: |
-    #     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ inventory_hostname }}"
+    #     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ ansible_host }}"
     #   delegate_to: localhost
       
     # - name: Install agenix on the target machine TODO
