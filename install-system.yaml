@@ -64,6 +64,15 @@
       run_once: true
       no_log: true
 
+    - name: Re-encrypt the flake with agenix
+      ansible.builtin.expect:
+        command: agenix --rekey
+        chdir: ./secrets
+        responses:
+          (?i)Enter passphrase: "{{ ssh_passphrase.user_input }}"
+      delegate_to: localhost
+      run_once: true
+
     - name: Update known_hosts file to remove old host key
       ansible.builtin.shell: |
         ssh-keygen -R "{{ ansible_host }}"
@@ -78,7 +87,7 @@
       run_once: true
       args:
         executable: /run/current-system/sw/bin/bash
-        
+
     - name: Copy the private SSH key to the target root account
       ansible.builtin.copy:
         src: /tmp/id_ed25519
@@ -103,7 +112,7 @@
 
     - name: Commit changes to the flake
       ansible.builtin.shell:
-        cmd: git commit -aSsm "Add SSH public key for {{ inventory_hostname }}"
+        cmd: git commit -a -Ss -m "Add SSH public key for {{ inventory_hostname }}"
       delegate_to: localhost
       args:
         executable: /run/current-system/sw/bin/bash
