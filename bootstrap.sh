@@ -194,14 +194,20 @@ generate_nixos_hardware_config() {
 # Install Nix packages
 install_nix_packages() {
     log "Installing Nix packages: $NIX_PACKAGES..."
-    nix-env -iA $NIX_PACKAGES &>> nix_packages_install.log
-    if [ $? -eq 0 ]; then
-        log "Nix packages installed successfully."
-    else
-        log "Failed to install Nix packages. See nix_packages_install.log for details."
-        exit 1
-    fi
+    for pkg_name in $NIX_PACKAGES; do
+        # Prepend 'nixos.' to each package name
+        pkg="nixos.$pkg_name"
+        nix-env -iA $pkg &>> nix_packages_install.log
+        if [ $? -eq 0 ]; then
+            log "$pkg installed successfully."
+        else
+            log "Failed to install $pkg. See nix_packages_install.log for details."
+            exit 1
+        fi
+    done
+    log "All Nix packages installed successfully."
 }
+
 
 # Execute functions based on the configuration
 [ "$SETUP_VLAN" = "true" ] && create_vlan

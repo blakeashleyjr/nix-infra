@@ -12,6 +12,27 @@
   gather_facts: no
   become: yes
   tasks:
+    - name: Remove old private key in /tmp
+      ansible.builtin.file:
+        path: /tmp/id_ed25519
+        state: absent
+      delegate_to: localhost
+      run_once: true
+    
+    - name: Remove old public key in /tmp
+      ansible.builtin.file:
+        path: /tmp/id_ed25519.pub
+        state: absent
+      delegate_to: localhost
+      run_once: true
+    
+    - name: Generate an ED25519 SSH key pair with standard filenames
+      ansible.builtin.openssh_keypair:
+        path: /tmp/id_ed25519
+        type: ed25519
+      delegate_to: localhost
+      run_once: true
+
     - name: Print the SSH public key amend it with the inventory_hostname for identification
       ansible.builtin.shell:
         cmd: echo "$(cat /tmp/id_ed25519.pub) {{ inventory_hostname }}"
@@ -41,21 +62,44 @@
       register: ssh_passphrase
       delegate_to: localhost
       run_once: true
-
-    - name: Prompt for SSH passphrase
-      ansible.builtin.pause:
-        prompt: "Please enter your SSH passphrase"
-      register: ssh_passphrase
-      delegate_to: localhost
-      run_once: true
       no_log: true
 
+    - name: Update known_hosts file to remove old host key
+      ansible.builtin.shell: |
+        ssh-keygen -R "{{ ansible_host }}"
+      delegate_to: localhost
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    - name: Temporarily make the private SSH key globally readable
+      ansible.builtin.command: chmod 644 /tmp/id_ed25519
+      delegate_to: localhost
+      become: yes
+      run_once: true
+      args:
+        executable: /run/current-system/sw/bin/bash
+        
     - name: Copy the private SSH key to the target root account
       ansible.builtin.copy:
         src: /tmp/id_ed25519
         dest: /root/.ssh/id_ed25519
         mode: '0600'
       delegate_to: "{{ inventory_hostname }}"
+      become: yes
+
+    - name: Copy the public SSH key to the target root account
+      ansible.builtin.copy:
+        src: /tmp/id_ed25519.pub
+        dest: /root/.ssh/id_ed25519.pub
+        mode: '0644'
+      delegate_to: "{{ inventory_hostname }}"
+      become: yes
+
+    - name: Revert private SSH key permissions
+      ansible.builtin.command: chmod 600 /tmp/id_ed25519
+      delegate_to: localhost
+      become: yes
+      run_once: true
 
     - name: Commit changes to the flake
       ansible.builtin.shell:
@@ -64,25 +108,43 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
-    # - name: Install NixOS on the target machine using local clone of nixos-anywhere
-    #   ansible.builtin.shell:
-    #     cmd: >
-    #       nix run ./ 
-    #       --extra-experimental-features "nix-command flakes" --no-reboot
-    #       -- --flake .#{{ inventory_hostname }}
-    #       root@{{ ansible_host }}
-    #   args:
-    #     executable: /run/current-system/sw/bin/bash
-    #   delegate_to: localhost
+    - name: Install NixOS on the target machine using local clone of nixos-anywhere
+      ansible.builtin.shell:
+        cmd: >
+          nix run ./ 
+          --extra-experimental-features "nix-command flakes" --no-reboot
+          -- --flake .#{{ inventory_hostname }}
+          root@{{ ansible_host }}
+      args:
+        executable: /run/current-system/sw/bin/bash
+      delegate_to: localhost
 
-    # - name: Copy the private SSH key to the target serveradmin account
-    #   ansible.builtin.copy:
-    #     src: /tmp/id_ed25519
-    #     dest: /root/.ssh/id_ed25519
-    #     mode: '0600'
-    #   delegate_to: "{{ inventory_hostname }}"
+    - name: Copy the private SSH key to the target serveradmin account
+      ansible.builtin.copy:
+        src: /tmp/id_ed25519
+        dest: /root/.ssh/id_ed25519
+        mode: '0600'
+      delegate_to: "{{ inventory_hostname }}"
 
-    # - name: Delete the private and public SSH key from the control machine /tmp
+    - name: Copy the public SSH key to the target serveradmin account
+      ansible.builtin.copy:
+        src: /tmp/id_ed25519.pub
+        dest: /root/.ssh/id_ed25519.pub
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Remove old private key in /tmp
+      ansible.builtin.file:
+        path: /tmp/id_ed25519
+        state: absent
+      delegate_to: localhost
+      run_once: true
+    
+    - name: Remove old public key in /tmp
+      ansible.builtin.file:
+        path: /tmp/id_ed25519.pub
+        state: absent
+      delegate_to: localhost
+      run_once: true
 
     # - name: Reboot
 
