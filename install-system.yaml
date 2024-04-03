@@ -56,22 +56,70 @@
       delegate_to: localhost
       run_once: true
 
-    - name: Prompt for SSH passphrase
-      ansible.builtin.pause:
-        prompt: "Please enter your SSH passphrase"
-      register: ssh_passphrase
+    - name: Ensure the reencrypt_secret.sh script is present and executable
+      copy:
+        content: |
+          #!/usr/bin/expect -f
+          
+          set timeout -1
+          
+          # Function to re-encrypt with agenix for a single secret
+          proc reencrypt_secret {secret} {
+              spawn agenix --rekey $secret
+              expect "Enter passphrase for*"
+              send -- "$::env(SSH_PASSPHRASE)\r"
+              expect {
+                  "Enter passphrase for*" { reencrypt_secret $secret }
+                  eof
+              }
+          }
+          
+          # Prompt for the SSH passphrase
+          puts -nonewline "Please enter your SSH passphrase: "
+          stty -echo
+          expect_user -re "(.*)\n"
+          set SSH_PASSPHRASE $expect_out(1,string)
+          stty echo
+          puts ""
+          
+          # Change directory to ./secrets
+          cd ./secrets
+          
+          # Get the list of secrets to re-encrypt
+          set secrets [split [exec agenix --list] "\n"]
+          
+          # Re-encrypt each secret
+          foreach secret $secrets {
+              if {$secret ne ""} {
+                  reencrypt_secret $secret
+              }
+          }
+          
+          # Check if any errors occurred during re-encryption
+          if {[catch {expect eof}]} {
+              puts "Re-encryption failed. Please run the script again or manually check the error."
+              exit 1
+          } else {
+              puts "Re-encryption successful."
+          }
+        dest: /tmp/reencrypt_secret.sh
+        mode: '0700'
       delegate_to: localhost
       run_once: true
-      no_log: true
+      args:
+        executable: /run/current-system/sw/bin/bash
 
-    - name: Re-encrypt the flake with agenix
-      ansible.builtin.expect:
-        command: agenix --rekey
-        chdir: ./secrets
-        responses:
-          (?i)Enter passphrase: "{{ ssh_passphrase.user_input }}"
+    - name: Execute reencryption script
+      ansible.builtin.shell: "/tmp/reencrypt_secret.sh"
       delegate_to: localhost
       run_once: true
+      ignore_errors: true  # Consider handling errors more gracefully
+
+    - name: Manual fallback prompt
+      ansible.builtin.pause:
+        prompt: "If the script did not run successfully, please run /tmp/reencrypt_secret.sh in a new terminal tab and press enter here once done."
+      delegate_to: localhost
+      when: "'Re-encryption successful.' not in hostvars[inventory_hostname].stderr"
 
     - name: Update known_hosts file to remove old host key
       ansible.builtin.shell: |

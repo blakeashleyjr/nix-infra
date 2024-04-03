@@ -66,6 +66,7 @@
     # Shell environments
     fish # Friendly Interactive SHell, a smart and user-friendly command line shell
     python311Packages.pexpect # Pure Python Expect-like module
+    expect # A tool for automating interactive applications
   ];
 
 
