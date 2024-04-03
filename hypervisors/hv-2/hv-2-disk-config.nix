@@ -3,7 +3,7 @@
     disk = {
       vdb = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S64ANL0TB0FF29V";
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions = {

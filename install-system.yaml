@@ -6,24 +6,85 @@
       fail:
         msg: "You must specify a target_host variable."
       when: target_host is not defined
-      
+
 - name: Deploy NixOS using nixos-anywhere
   hosts: all
   gather_facts: no
   become: yes
   tasks:
-
-    - name: Install NixOS on the target machine using local clone of nixos-anywhere
+    - name: Print the SSH public key amend it with the inventory_hostname for identification
       ansible.builtin.shell:
-        cmd: >
-          nix run ./ 
-          --extra-experimental-features "nix-command flakes" 
-          -- --flake .#{{ inventory_hostname }}
-          --disk-config /tmp/nixos-setup/disk-config.nix root@{{ ansible_host }}
+        cmd: echo "$(cat /tmp/id_ed25519.pub) {{ inventory_hostname }}"
+      register: ssh_public_key_with_host
+      delegate_to: localhost
+      run_once: true
+
+    - name: Print the SSH public key and prompt to add it
+      ansible.builtin.shell:
+        cmd: cat /tmp/id_ed25519.pub
+      register: ssh_public_key
+      delegate_to: localhost
+      run_once: true
+
+    - name: Prompt to add the SSH public key to the flake and secrets.nix
+      ansible.builtin.pause:
+        prompt: |
+          Add the following SSH public key to secrets.nix for {{ inventory_hostname }}:
+          {{ ssh_public_key_with_host.stdout }}
+          Press enter once done.
+      delegate_to: localhost
+      run_once: true
+
+    - name: Prompt for SSH passphrase
+      ansible.builtin.pause:
+        prompt: "Please enter your SSH passphrase"
+      register: ssh_passphrase
+      delegate_to: localhost
+      run_once: true
+
+    - name: Prompt for SSH passphrase
+      ansible.builtin.pause:
+        prompt: "Please enter your SSH passphrase"
+      register: ssh_passphrase
+      delegate_to: localhost
+      run_once: true
+      no_log: true
+
+    - name: Copy the private SSH key to the target root account
+      ansible.builtin.copy:
+        src: /tmp/id_ed25519
+        dest: /root/.ssh/id_ed25519
+        mode: '0600'
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Commit changes to the flake
+      ansible.builtin.shell:
+        cmd: git commit -aSsm "Add SSH public key for {{ inventory_hostname }}"
+      delegate_to: localhost
       args:
         executable: /run/current-system/sw/bin/bash
-      delegate_to: localhost
 
+    # - name: Install NixOS on the target machine using local clone of nixos-anywhere
+    #   ansible.builtin.shell:
+    #     cmd: >
+    #       nix run ./ 
+    #       --extra-experimental-features "nix-command flakes" --no-reboot
+    #       -- --flake .#{{ inventory_hostname }}
+    #       root@{{ ansible_host }}
+    #   args:
+    #     executable: /run/current-system/sw/bin/bash
+    #   delegate_to: localhost
+
+    # - name: Copy the private SSH key to the target serveradmin account
+    #   ansible.builtin.copy:
+    #     src: /tmp/id_ed25519
+    #     dest: /root/.ssh/id_ed25519
+    #     mode: '0600'
+    #   delegate_to: "{{ inventory_hostname }}"
+
+    # - name: Delete the private and public SSH key from the control machine /tmp
+
+    # - name: Reboot
 
     # - name: Wait for the machine to reboot
     #   ansible.builtin.wait_for_connection:
@@ -35,24 +96,6 @@
     #     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ ansible_host }}"
     #   delegate_to: localhost
       
-    # - name: Install agenix on the target machine TODO
-    #   ansible.builtin.shell: |
-    #     sudo nix-channel --add https://github.com/ryantm/agenix/archive/main.tar.gz agenix && sudo nix-channel --update
-    #   args:
-    #     executable: /run/current-system/sw/bin/bash
-
-    # # Generate ed25519 ssh key pair
-    # - name: Generate ed25519 ssh key pair
-    #   ansible.builtin.shell: |
-    #     ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ""
-    #   args:
-    #     executable: /run/current-system/sw/bin/bash
-
-    # # Pause to add that key to the flake
-    # - name: Pause to add that key to the flake
-    #   ansible.builtin.pause:
-    #     prompt: "Add the following key to the flake (add to secrets.nix and re-encrypt with agenix -r) and press Enter to continue: {{ lookup('file', '/root/.ssh/id_ed25519.pub') }}"
-
     # - name: Apply custom flake configuration
     #   ansible.builtin.shell: |
     #     nixos-rebuild switch --flake github:blakeashleyjr/nix-infra#hv-2 --target-host root@{{ inventory_hostname }}
