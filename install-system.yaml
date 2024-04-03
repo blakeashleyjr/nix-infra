@@ -12,43 +12,18 @@
   gather_facts: no
   become: yes
   tasks:
-    - name: Ensure /tmp/nixos-setup exists
-      ansible.builtin.file:
-        path: /tmp/nixos-setup
-        state: directory
-      delegate_to: localhost
-
-    - name: Copy nixos-anywhere into the setup directory
-      ansible.builtin.shell:
-        cmd: "git clone -b main https://github.com/nix-community/nixos-anywhere-examples.git /tmp/nixos-setup"
-        dest: "/tmp/nixos-setup/disk-config.nix"        
-      args:
-        executable: /run/current-system/sw/bin/bash
-      delegate_to: localhost
-
-    - name: Copy the disk configuration into the setup directory
-      ansible.builtin.file:
-        src: "{{ playbook_dir }}/{{ disk_config_path }}"
-        dest: "/tmp/nixos-setup/disk-config.nix"
 
     - name: Install NixOS on the target machine using local clone of nixos-anywhere
       ansible.builtin.shell:
         cmd: >
-          nix run /tmp/nixos-setup/nixos-anywhere-examples 
+          nix run ./ 
           --extra-experimental-features "nix-command flakes" 
-          -- --flake /tmp/nixos-setup/nixos-anywhere-examples#hetzner-cloud 
+          -- --flake .#{{ inventory_hostname}}
           --disk-config /tmp/nixos-setup/disk-config.nix root@{{ inventory_hostname }}
       args:
         executable: /run/current-system/sw/bin/bash
       delegate_to: localhost
 
-    - name: Cleanup - Remove temporary setup directory
-      ansible.builtin.file:
-        path: "/tmp/nixos-setup"
-        state: absent
-      delegate_to: localhost
-      args:
-        executable: /run/current-system/sw/bin/bash
 
     # - name: Wait for the machine to reboot
     #   ansible.builtin.wait_for_connection:
