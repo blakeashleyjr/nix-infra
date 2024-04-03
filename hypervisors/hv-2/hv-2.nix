@@ -1,7 +1,12 @@
-{ config, pkgs, lib, ... }:
-{
+{ modulesPath, config, lib, pkgs, ... }: {
+  imports = [
+    (modulesPath + "/installer/scan/not-detected.nix")
+    (modulesPath + "/profiles/qemu-guest.nix")
+    ./hv-2-disk-config.nix
+  ];
+
   # Define the hostname
-  networking.hostName = "nixos";
+  networking.hostName = "hv-2";
 
   # Define the timezone
   time.timeZone = "America/Los_Angeles";

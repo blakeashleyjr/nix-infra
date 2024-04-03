@@ -7,4 +7,4 @@ all:
         hv-2:
           ansible_host: 10.173.5.70
           flake_name: "hv-2"
-          disk_config_path: "./hypervisors/hv-2/hv-2-disk-config.nix"
+          disk_config_path: "hypervisors/hv-2/hv-2-disk-config.nix"

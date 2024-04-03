@@ -3,10 +3,10 @@
 # Define configurations for each host at the top of the script
 declare -A HOST_CONFIG=(
     ["hv-2"]="enp37s0,10.173.5.70/24,10.173.5.1,1.1.1.1,true,5"
-    # Format: "host_name"="network_interface,ip_address/mask,default_gateway,dns_server,setup_vlan,vlan_number"
-    # Example for a host without VLAN configuration:
-    # ["another-host"]="eth0,192.168.1.100/24,192.168.1.1,8.8.4.4,false,0"
 )
+
+# List of Nix packages to install
+NIX_PACKAGES="python312 git wget"
 
 # Hostname passed as a script argument
 HOSTNAME=$1
@@ -15,7 +15,6 @@ if [ -z "$HOSTNAME" ]; then
     exit 1
 fi
 
-# Extract the configuration for the given hostname
 IFS=',' read -ra CONFIG <<< "${HOST_CONFIG[$HOSTNAME]}"
 if [ ${#CONFIG[@]} -eq 0 ]; then
     echo "No configuration found for host: $HOSTNAME"
@@ -28,7 +27,6 @@ DEFAULT_GATEWAY=${CONFIG[2]}
 DNS_SERVER=${CONFIG[3]}
 SETUP_VLAN=${CONFIG[4]}
 VLAN_NUMBER=${CONFIG[5]}
-
 # Define logging function
 log() {
     echo "`date '+%Y-%m-%d %H:%M:%S'`: $1"
@@ -193,6 +191,18 @@ generate_nixos_hardware_config() {
     fi
 }
 
+# Install Nix packages
+install_nix_packages() {
+    log "Installing Nix packages: $NIX_PACKAGES..."
+    nix-env -iA $NIX_PACKAGES &>> nix_packages_install.log
+    if [ $? -eq 0 ]; then
+        log "Nix packages installed successfully."
+    else
+        log "Failed to install Nix packages. See nix_packages_install.log for details."
+        exit 1
+    fi
+}
+
 # Execute functions based on the configuration
 [ "$SETUP_VLAN" = "true" ] && create_vlan
 assign_ip
@@ -203,5 +213,6 @@ check_internet
 check_dns
 configure_ssh_keys
 generate_nixos_hardware_config
+install_nix_packages # Calling the function to install Nix packages
 
-log "Network and hardware configuration for $HOSTNAME completed successfully."
+log "Network, hardware, and software configuration for $HOSTNAME completed successfully."

@@ -16,52 +16,73 @@
       ansible.builtin.file:
         path: /tmp/nixos-setup
         state: directory
+      delegate_to: localhost
 
-    - name: Copy disk configuration to remote machine
-      ansible.builtin.copy:
-        src: "{{ disk_config_path }}"
+    - name: Copy nixos-anywhere into the setup directory
+      ansible.builtin.shell:
+        cmd: "git clone -b main https://github.com/nix-community/nixos-anywhere-examples.git /tmp/nixos-setup"
+        dest: "/tmp/nixos-setup/disk-config.nix"        
+      args:
+        executable: /run/current-system/sw/bin/bash
+      delegate_to: localhost
+
+    - name: Copy the disk configuration into the setup directory
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/{{ disk_config_path }}"
         dest: "/tmp/nixos-setup/disk-config.nix"
 
-    - name: Install NixOS on the target machine using nixos-anywhere
-      ansible.builtin.shell: |
-        nix run github:nix-community/nixos-anywhere -- --flake github:nix-community/nixos-anywhere-examples#{{ flake_name }} --disk-config /tmp/nixos-setup/disk-config.nix root@{{ inventory_hostname }}
+    - name: Install NixOS on the target machine using local clone of nixos-anywhere
+      ansible.builtin.shell:
+        cmd: >
+          nix run /tmp/nixos-setup/nixos-anywhere-examples 
+          --extra-experimental-features "nix-command flakes" 
+          -- --flake /tmp/nixos-setup/nixos-anywhere-examples#hetzner-cloud 
+          --disk-config /tmp/nixos-setup/disk-config.nix root@{{ inventory_hostname }}
       args:
-        executable: /bin/bash
-      ignore_errors: yes
-
-    - name: Wait for the machine to reboot
-      ansible.builtin.wait_for_connection:
-        delay: 60
-        timeout: 300
-
-    - name: Update known_hosts file to remove old host key
-      ansible.builtin.shell: |
-        ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ inventory_hostname }}"
+        executable: /run/current-system/sw/bin/bash
       delegate_to: localhost
+
+    - name: Cleanup - Remove temporary setup directory
+      ansible.builtin.file:
+        path: "/tmp/nixos-setup"
+        state: absent
+      delegate_to: localhost
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    # - name: Wait for the machine to reboot
+    #   ansible.builtin.wait_for_connection:
+    #     delay: 60
+    #     timeout: 300
+
+    # - name: Update known_hosts file to remove old host key
+    #   ansible.builtin.shell: |
+    #     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ inventory_hostname }}"
+    #   delegate_to: localhost
       
-    - name: Install agenix on the target machine TODO
-      ansible.builtin.shell: |
-        sudo nix-channel --add https://github.com/ryantm/agenix/archive/main.tar.gz agenix && sudo nix-channel --update
-      args:
-        executable: /bin/bash
+    # - name: Install agenix on the target machine TODO
+    #   ansible.builtin.shell: |
+    #     sudo nix-channel --add https://github.com/ryantm/agenix/archive/main.tar.gz agenix && sudo nix-channel --update
+    #   args:
+    #     executable: /run/current-system/sw/bin/bash
 
-    # Generate ed25519 ssh key pair
-    - name: Generate ed25519 ssh key pair
-      ansible.builtin.shell: |
-        ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ""
-      args:
-        executable: /bin/bash
+    # # Generate ed25519 ssh key pair
+    # - name: Generate ed25519 ssh key pair
+    #   ansible.builtin.shell: |
+    #     ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ""
+    #   args:
+    #     executable: /run/current-system/sw/bin/bash
 
-    # Pause to add that key to the flake
-    - name: Pause to add that key to the flake
-      ansible.builtin.pause:
-        prompt: "Add the following key to the flake (add to secrets.nix and re-encrypt with agenix -r) and press Enter to continue: {{ lookup('file', '/root/.ssh/id_ed25519.pub') }}"
+    # # Pause to add that key to the flake
+    # - name: Pause to add that key to the flake
+    #   ansible.builtin.pause:
+    #     prompt: "Add the following key to the flake (add to secrets.nix and re-encrypt with agenix -r) and press Enter to continue: {{ lookup('file', '/root/.ssh/id_ed25519.pub') }}"
 
-    - name: Apply custom flake configuration
-      ansible.builtin.shell: |
-        nixos-rebuild switch --flake github:yourusername/yourflakerepo#{{ flake_name }} --target-host root@{{ inventory_hostname }}
-      args:
-        executable: /bin/bash
-      environment:
-        NIX_PATH: nixpkgs=channel:nixos-unstable
+    # - name: Apply custom flake configuration
+    #   ansible.builtin.shell: |
+    #     nixos-rebuild switch --flake github:blakeashleyjr/nix-infra#hv-2 --target-host root@{{ inventory_hostname }}
+    #   args:
+    #     executable: /run/current-system/sw/bin/bash
+    #   environment:
+    #     NIX_PATH: nixpkgs=channel:nixos-unstable
 

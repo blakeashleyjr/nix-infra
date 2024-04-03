@@ -25,6 +25,7 @@
           ./common-modules/system.nix
           ./common-modules/tailscale.nix
           agenix.nixosModules.default
+          disko.nixosModules.disko
         ];
         hypervisorModules = [
           ./hypervisors/hv-modules/hv-users.nix
