@@ -12,6 +12,11 @@
   gather_facts: no
   become: yes
   tasks:
+    - name: Bootstrap.sh prompt
+      ansible.builtin.pause:
+        prompt: "Run bootstrap.sh on the remote machine and press enter when done"
+      delegate_to: localhost
+
     - name: Remove old private key in /tmp
       ansible.builtin.file:
         path: /tmp/id_ed25519
@@ -52,21 +57,29 @@
         prompt: |
           Add the following SSH public key to secrets.nix for {{ inventory_hostname }}:
           {{ ssh_public_key_with_host.stdout }}
-          Press enter once done.
+          Press enter once done
       delegate_to: localhost
       run_once: true
 
     - name: Agenix Rekey prompt
       ansible.builtin.pause:
-        prompt: "Please run 'agenix -r' while in the ./secrets/ directory in a new terminal tab and press enter here once done."
+        prompt: "Please run 'agenix -r' while in the ./secrets/ directory in a new terminal tab and press enter here once done"
       delegate_to: localhost
 
-    - name: Update known_hosts file to remove old host key
-      ansible.builtin.shell: |
-        ssh-keygen -R "{{ ansible_host }}"
+    - name: Ensure known_hosts does not contain old host key by IP
+      ansible.builtin.lineinfile:
+        path: "{{ lookup('env','HOME') }}/.ssh/known_hosts"
+        regexp: '^{{ ansible_host }} '
+        state: absent
       delegate_to: localhost
-      args:
-        executable: /run/current-system/sw/bin/bash
+
+
+    - name: Ensure known_hosts does not contain old host key by hostname
+      ansible.builtin.lineinfile:
+        path: "{{ lookup('env','HOME') }}/.ssh/known_hosts"
+        regexp: '^{{ inventory_hostname }} '
+        state: absent
+      delegate_to: localhost
 
     - name: Temporarily make the private SSH key globally readable
       ansible.builtin.command: chmod 644 /tmp/id_ed25519
@@ -98,17 +111,17 @@
       become: yes
       run_once: true
 
-    - name: Manual fallback prompt
+    - name: Git commit prompt
       ansible.builtin.pause:
-        prompt: "Please commit the changes to the flake in another tab: git commit -a -Ss -m 'Add SSH public key for {{ inventory_hostname }}.'"
+        prompt: "Please commit the changes to the flake in another tab: git add . && git commit -a -Ss -m 'Add SSH public key for {{ inventory_hostname }}.' && git push"
       delegate_to: localhost
 
     - name: Install NixOS on the target machine using local clone of nixos-anywhere
       ansible.builtin.shell:
         cmd: >
           nix run ./ 
-          --extra-experimental-features "nix-command flakes" --no-reboot
-          -- --flake .#{{ inventory_hostname }}
+          --extra-experimental-features "nix-command flakes" 
+          -- --no-reboot --flake .#{{ inventory_hostname }}
           root@{{ ansible_host }}
       args:
         executable: /run/current-system/sw/bin/bash
