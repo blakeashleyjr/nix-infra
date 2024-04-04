@@ -32,6 +32,13 @@
         prompt: "Run bootstrap.sh on the remote machine and press enter when done"
       delegate_to: localhost
 
+    - name: Clear out the /tmp/nixos-anywhere-tmp directory
+      ansible.builtin.file:
+        path: /tmp/nixos-anywhere-tmp
+        state: absent
+      delegate_to: localhost
+      run_once: true
+
     - name: Create tmp directory
       ansible.builtin.file:
         path: /tmp/nixos-anywhere-tmp
@@ -81,7 +88,7 @@
     - name: Install NixOS on the target machine using local clone of nixos-anywhere
       ansible.builtin.shell:
         cmd: >
-          nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake /tmp/nixos-anywhere-tmp/#hetzner-cloud root@{{ ansible_host }} --no-reboot --stop-after-disko
+          nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake /tmp/nixos-anywhere-tmp/#hetzner-cloud root@{{ ansible_host }}
       args:
         executable: /run/current-system/sw/bin/bash
       delegate_to: localhost
