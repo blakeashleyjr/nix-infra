@@ -78,6 +78,7 @@
     signal-desktop
     nheko
     teams-for-linux
+    webex
 
     # Media Applications
     gimp
