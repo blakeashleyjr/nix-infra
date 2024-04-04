@@ -127,7 +127,6 @@
  ## git clone the flake
  ## install the system: nixos-install --flake .#hv-2 --no-root-passwd
 
-
     - name: Copy the private SSH key to the target serveradmin account
       ansible.builtin.copy:
         src: /tmp/id_ed25519
