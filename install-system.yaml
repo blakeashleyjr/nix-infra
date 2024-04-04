@@ -119,13 +119,14 @@
     - name: Install NixOS on the target machine using local clone of nixos-anywhere
       ansible.builtin.shell:
         cmd: >
-          nix run ./ 
-          --extra-experimental-features "nix-command flakes" 
-          -- --no-reboot --flake .#{{ inventory_hostname }}
-          root@{{ ansible_host }}
+          nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake .#{{ inventory_hostname }} root@{{ ansible_host }} --no-reboot --stop-after-disko
       args:
         executable: /run/current-system/sw/bin/bash
       delegate_to: localhost
+
+ ## git clone the flake
+ ## install the system: nixos-install --flake .#hv-2 --no-root-passwd
+
 
     - name: Copy the private SSH key to the target serveradmin account
       ansible.builtin.copy:

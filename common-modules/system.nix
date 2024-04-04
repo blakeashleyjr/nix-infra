@@ -1,7 +1,22 @@
+veradmin are using ed25519 keys for SSH. Adjust the paths accordingly if your setup differs:
+
+nix
+
 { pkgs, lib, ... }:
+let
+  # Define the custom SSH key paths for root and serveradmin to be used by agenix
+  customSSHKeyPaths = [
+    "/root/.ssh/id_ed25519" # Path to the private SSH key of the root user
+    "/home/serveradmin/.ssh/id_ed25519" # Path to the private SSH key of the serveradmin user
+  ];
+in
 {
   # Version specification
   system.stateVersion = "23.11"; # Don't change
+
+  nixos.age = {
+    identityPaths = lib.mkForce customSSHKeyPaths;
+  };
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
