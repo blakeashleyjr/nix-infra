@@ -12,45 +12,84 @@
   gather_facts: no
   become: yes
   tasks:
+
+    - name: Ensure known_hosts does not contain old host key by IP
+      ansible.builtin.lineinfile:
+        path: "{{ lookup('env','HOME') }}/.ssh/known_hosts"
+        regexp: '^{{ ansible_host }} '
+        state: absent
+      delegate_to: localhost
+
+    - name: Ensure known_hosts does not contain old host key by hostname
+      ansible.builtin.lineinfile:
+        path: "{{ lookup('env','HOME') }}/.ssh/known_hosts"
+        regexp: '^{{ inventory_hostname }} '
+        state: absent
+      delegate_to: localhost
+
     - name: Bootstrap.sh prompt
       ansible.builtin.pause:
         prompt: "Run bootstrap.sh on the remote machine and press enter when done"
       delegate_to: localhost
 
-    - name: Remove old private key in /tmp
+    - name: Create tmp directory
       ansible.builtin.file:
-        path: /tmp/id_ed25519
-        state: absent
-      delegate_to: localhost
-      run_once: true
-    
-    - name: Remove old public key in /tmp
-      ansible.builtin.file:
-        path: /tmp/id_ed25519.pub
-        state: absent
-      delegate_to: localhost
-      run_once: true
-    
-    - name: Generate an ED25519 SSH key pair with standard filenames
-      ansible.builtin.openssh_keypair:
-        path: /tmp/id_ed25519
-        type: ed25519
+        path: /tmp/nixos-anywhere-tmp
+        state: directory
       delegate_to: localhost
       run_once: true
 
-    - name: Print the SSH public key amend it with the inventory_hostname for identification
+    - name: Git clone the examples repo
       ansible.builtin.shell:
-        cmd: echo "$(cat /tmp/id_ed25519.pub) {{ inventory_hostname }}"
+        cmd: git clone https://github.com/nix-community/nixos-anywhere-examples/ /tmp/nixos-anywhere-tmp
+      delegate_to: localhost
+
+    - name: Read my public ssh key
+      ansible.builtin.shell:
+        cmd: cat /home/blake/.ssh/id_ed25519.pub
       register: ssh_public_key_with_host
       delegate_to: localhost
       run_once: true
 
-    - name: Print the SSH public key and prompt to add it
-      ansible.builtin.shell:
-        cmd: cat /tmp/id_ed25519.pub
-      register: ssh_public_key
+    - name: Replace "CHANGE" with my ssh key  
+      ansible.builtin.replace:
+        path: /tmp/nixos-anywhere-tmp/configuration.nix
+        regexp: 'CHANGE'
+        replace: "{{ ssh_public_key_with_host.stdout }}"
       delegate_to: localhost
       run_once: true
+
+    - name: Delete example disk config
+      ansible.builtin.file:
+        path: /tmp/nixos-anywhere-tmp/disk-config.nix
+        state: absent
+      delegate_to: localhost
+      run_once: true
+
+    - name: Copy the correct disk config to the example directory based on dynamic path
+      ansible.builtin.copy:
+        src: "{{ lookup('env','PWD') }}/{{ hostvars[inventory_hostname]['disk_config_path'] }}"
+        dest: /tmp/nixos-anywhere-tmp/disk-config.nix
+      delegate_to: localhost
+      run_once: true
+
+    - name: Stop to run command manually
+      ansible.builtin.pause:
+        prompt: "Stop to run command manually"
+      delegate_to: localhost
+
+    - name: Install NixOS on the target machine using local clone of nixos-anywhere
+      ansible.builtin.shell:
+        cmd: >
+          nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake /tmp/nixos-anywhere-tmp/#hetzner-cloud root@{{ ansible_host }} --no-reboot --stop-after-disko
+      args:
+        executable: /run/current-system/sw/bin/bash
+      delegate_to: localhost
+
+    - name: Wait for the machine to reboot
+      ansible.builtin.wait_for_connection:
+        delay: 60
+        timeout: 300
 
     - name: Prompt to add the SSH public key to the secrets.nix file
       ansible.builtin.pause:
@@ -66,66 +105,15 @@
         prompt: "Please run 'agenix -r' while in the ./secrets/ directory in a new terminal tab and press enter here once done"
       delegate_to: localhost
 
-    - name: Ensure known_hosts does not contain old host key by IP
-      ansible.builtin.lineinfile:
-        path: "{{ lookup('env','HOME') }}/.ssh/known_hosts"
-        regexp: '^{{ ansible_host }} '
-        state: absent
-      delegate_to: localhost
-
-
-    - name: Ensure known_hosts does not contain old host key by hostname
-      ansible.builtin.lineinfile:
-        path: "{{ lookup('env','HOME') }}/.ssh/known_hosts"
-        regexp: '^{{ inventory_hostname }} '
-        state: absent
-      delegate_to: localhost
-
-    - name: Temporarily make the private SSH key globally readable
-      ansible.builtin.command: chmod 644 /tmp/id_ed25519
-      delegate_to: localhost
-      become: yes
-      run_once: true
-      args:
-        executable: /run/current-system/sw/bin/bash
-
-    - name: Copy the private SSH key to the target root account
-      ansible.builtin.copy:
-        src: /tmp/id_ed25519
-        dest: /root/.ssh/id_ed25519
-        mode: '0600'
-      delegate_to: "{{ inventory_hostname }}"
-      become: yes
-
-    - name: Copy the public SSH key to the target root account
-      ansible.builtin.copy:
-        src: /tmp/id_ed25519.pub
-        dest: /root/.ssh/id_ed25519.pub
-        mode: '0644'
-      delegate_to: "{{ inventory_hostname }}"
-      become: yes
-
-    - name: Revert private SSH key permissions
-      ansible.builtin.command: chmod 600 /tmp/id_ed25519
-      delegate_to: localhost
-      become: yes
-      run_once: true
-
     - name: Git commit prompt
       ansible.builtin.pause:
         prompt: "Please commit the changes to the flake in another tab: git add . && git commit -a -Ss -m 'Add SSH public key for {{ inventory_hostname }}.' && git push"
       delegate_to: localhost
 
-    - name: Install NixOS on the target machine using local clone of nixos-anywhere
-      ansible.builtin.shell:
-        cmd: >
-          nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake .#{{ inventory_hostname }} root@{{ ansible_host }} --no-reboot --stop-after-disko
-      args:
-        executable: /run/current-system/sw/bin/bash
-      delegate_to: localhost
-
+ ## Reboot the system
  ## git clone the flake
  ## install the system: nixos-install --flake .#hv-2 --no-root-passwd
+
 
     - name: Copy the private SSH key to the target serveradmin account
       ansible.builtin.copy:

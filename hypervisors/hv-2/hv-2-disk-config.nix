@@ -27,7 +27,7 @@
                 # Subvolumes must set a mountpoint in order to be mounted,
                 # unless their parent is mounted
                 subvolumes = {
-                  # Subvolume name is different from mountpoint
+                  # Subvolume name is different from the mountpoint
                   "/rootfs" = {
                     mountpoint = "/";
                   };
@@ -38,15 +38,15 @@
                   };
                   # Parent is not mounted so the mountpoint must be set
                   "/nix" = {
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = [ "compress=zstd", "noatime" ]; # Corrected syntax for mountOptions
                     mountpoint = "/nix";
                   };
-                  # Subvolume for the swapfile
-                  "/swap" = {
-                    mountpoint = "/.swapvol";
-                    swap = {
-                      swapfile.size = "20G";
-                    };
+                };
+                # Adjusting swap configuration to be at the correct level
+                swap = {
+                  swapfile = {
+                    path = "/.swapvol/swapfile"; # Assuming the path for swapfile
+                    size = "20G";
                   };
                 };
               };
