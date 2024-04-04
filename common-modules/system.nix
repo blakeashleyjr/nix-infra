@@ -10,7 +10,7 @@ in
   # Version specification
   system.stateVersion = "23.11"; # Don't change
 
-  nixos.age = {
+  age = {
     identityPaths = lib.mkForce customSSHKeyPaths;
   };
 
