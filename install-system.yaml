@@ -52,7 +52,7 @@
       delegate_to: localhost
       run_once: true
 
-    - name: Prompt to add the SSH public key to the flake and secrets.nix
+    - name: Prompt to add the SSH public key to the secrets.nix file
       ansible.builtin.pause:
         prompt: |
           Add the following SSH public key to secrets.nix for {{ inventory_hostname }}:
