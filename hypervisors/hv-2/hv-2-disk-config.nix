@@ -20,7 +20,6 @@
               };
             };
             root = {
-              size = "100%";
               end = "-20G";
               content = {
                 type = "btrfs";
