@@ -21,6 +21,7 @@
             };
             root = {
               size = "100%";
+              end = "-20G";
               content = {
                 type = "btrfs";
                 extraArgs = [ "-f" ]; # Override existing partition
@@ -38,26 +39,16 @@
                   };
                   # Parent is not mounted so the mountpoint must be set
                   "/nix" = {
-                    mountOptions = [ "compress=zstd" "noatime" ];
+                    mountOptions = [ "compress=zstd" "noatime" ]; # This is correct
                     mountpoint = "/nix";
                   };
-                  # Subvolume for the swapfile, as per the example
-                  "/swap" = {
-                    mountpoint = "/.swapvol";
-                    swap = {
-                      swapfile = {
-                        size = "20G";
-                      };
-                    };
-                  };
                 };
-                # Direct swap configuration under root.content
-                swap = {
-                  swapfile = {
-                    size = "20G";
-                    path = "/.swapvol/swapfile";
-                  };
-                };
+              };
+            };
+            plainSwap = {
+              size = "100%";
+              content = {
+                type = "swap";
               };
             };
           };
