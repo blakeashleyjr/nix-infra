@@ -10,11 +10,10 @@
 
   # Define the timezone
   time.timeZone = "America/Los_Angeles";
-  
+
   # Networking configuration for systemd-networkd
   systemd.services."systemd-networkd".environment.SYSTEMD_LOG_LEVEL = "debug";
 
-  # Enable systemd-networkd for managing network interfaces
   systemd.network = {
     enable = true;
 
@@ -57,6 +56,7 @@
         };
         vlanConfig = {
           Id = 5;
+          # Link = "bond1"; # Not allowed
         };
       };
 
@@ -107,22 +107,22 @@
         linkConfig.RequiredForOnline = "carrier";
       };
 
-      # VLAN5 interface configuration
+      # VLAN5 interface is now part of the bridge
       "vlan5" = {
         matchConfig.Name = "vlan5";
+        networkConfig.Bridge = "br-vlan5"; # Attach VLAN5 to the bridge
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
+        linkConfig.RequiredForOnline = "no"; # We don't require VLAN5 itself to be online since the bridge will handle connectivity
+      };
+
+      # Bridge interface configuration for VLAN5 with network settings
+      "br-vlan5" = {
+        matchConfig.Name = "br-vlan5";
         networkConfig.Address = [ "10.173.5.70/24" ];
         networkConfig.Gateway = "10.173.5.1";
         networkConfig.DNS = [ "1.1.1.1" ];
-        linkConfig.RequiredForOnline = "yes";
-      };
-
-      # Bridge interface configuration for VLAN5
-      "br-vlan5" = {
-        matchConfig.Name = "br-vlan5";
-        networkConfig.Bridge = [ "vlan5" ];
-        linkConfig.RequiredForOnline = "no";
+        linkConfig.RequiredForOnline = "yes"; # The bridge itself needs to be online
       };
     };
   };
