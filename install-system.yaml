@@ -46,13 +46,6 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
-    - name: Copy git repo to new install root user
-      ansible.builtin.shell:
-        cmd: >
-          sudo cp -r ./nix-infra /mnt/root/
-      args:
-        executable: /run/current-system/sw/bin/bash
-
     # Run install command first that downloads the paths but regenerates the host keys
     - name: Stop to run command manually
       ansible.builtin.pause:
@@ -100,12 +93,46 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
+    - name: Read secrets.nix from the repository
+      ansible.builtin.slurp:
+        src: "./nix-infra/secrets/secrets.nix"
+      register: secrets_nix_content
+
+    - name: Convert secrets.nix content to string
+      set_fact:
+        secrets_nix_string: "{{ secrets_nix_content['content'] | b64decode }}"
+
+    - name: Extract SSH public key for {{ inventory_hostname }}
+      set_fact:
+        inventory_ssh_key: "{{ secrets_nix_string | regex_search(inventory_hostname + '\\s*=\\s*\"(ssh-ed25519 [^\"]+)\"', '\\1') | default([]) | first }}"
+
+    - name: Fetch SSH public key from remote server
+      ansible.builtin.slurp:
+        src: "/etc/ssh/ssh_host_ed25519_key.pub"
+      register: remote_ssh_key_content
+
+    - name: Convert remote SSH public key to string
+      set_fact:
+        remote_ssh_key_string: "{{ remote_ssh_key_content['content'] | b64decode | trim }}"
+
+    - name: Check if the keys match
+      fail:
+        msg: "SSH keys do not match!"
+      when: inventory_ssh_key not in remote_ssh_key_string
+
     # Run install command again but with the new host keys to decrypt the secrets
     # Set root password for testing so I can troubleshoot network issues
     - name: Stop to run command manually
       ansible.builtin.pause:
         prompt: "Stop to run command manually"
       delegate_to: localhost
+
+    - name: Copy git repo to new install root user
+      ansible.builtin.shell:
+        cmd: >
+          sudo cp -r ./nix-infra /mnt/root/
+      args:
+        executable: /run/current-system/sw/bin/bash
 
     # - name: Wait for the machine to reboot
     #   ansible.builtin.wait_for_connection:
