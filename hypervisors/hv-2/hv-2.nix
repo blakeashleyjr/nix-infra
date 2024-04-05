@@ -59,14 +59,6 @@
           # Link = "bond1"; # Not allowed
         };
       };
-
-      # Bridge interface for VLAN5
-      "br-vlan5" = {
-        netdevConfig = {
-          Kind = "bridge";
-          Name = "br-vlan5";
-        };
-      };
     };
 
     networks = {
@@ -102,6 +94,7 @@
       # Bond1 interface configuration
       "bond1" = {
         matchConfig.Name = "bond1";
+        networkConfig.Bridge = "br-vlan5"; # Attach bond1 to the bridge
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "carrier";
@@ -110,15 +103,8 @@
       # VLAN5 interface is now part of the bridge
       "vlan5" = {
         matchConfig.Name = "vlan5";
-        networkConfig.Bridge = "br-vlan5"; # Attach VLAN5 to the bridge
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
-        linkConfig.RequiredForOnline = "no"; # We don't require VLAN5 itself to be online since the bridge will handle connectivity
-      };
-
-      # Bridge interface configuration for VLAN5 with network settings
-      "br-vlan5" = {
-        matchConfig.Name = "br-vlan5";
         networkConfig.Address = [ "10.173.5.70/24" ];
         networkConfig.Gateway = "10.173.5.1";
         networkConfig.DNS = [ "1.1.1.1" ];
