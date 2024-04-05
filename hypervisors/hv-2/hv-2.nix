@@ -97,7 +97,7 @@
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "carrier";
-        vlan [ "vlan5" ]
+        vlan [ "vlan5" ];
         };
 
         # VLAN5 interface configuration

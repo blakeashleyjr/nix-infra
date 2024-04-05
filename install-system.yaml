@@ -80,19 +80,18 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
-    - name: Copy ssh hostkey to new install
-      ansible.builtin.shell:
-        cmd: >
-          sudo cp -r /etc/ssh/* /mnt/etc/ssh/
-      args:
-        executable: /run/current-system/sw/bin/bash
-
     # Run install command
     - name: Stop to run command manually
       ansible.builtin.pause:
         prompt: "Stop to run command manually"
       delegate_to: localhost
 
+    - name: Copy ssh hostkey to new install
+      ansible.builtin.shell:
+        cmd: >
+          sudo cp -r /etc/ssh/* /mnt/etc/ssh/
+      args:
+        executable: /run/current-system/sw/bin/bash
     # Set root password for testing so I can troubleshoot network issues
 
     # Check if the host key is unchanged
