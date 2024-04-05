@@ -52,6 +52,18 @@
             clusterInit = true;
             serverAddr = "10.173.5.70"; # Example IP address
             # token = "example-token"; # Example token // Set once the cluster is initialized
+            tailscale = {
+              args = {
+                configureTailscale = true;
+                advertiseRoutes = "10.173.0.0/16";
+                advertiseExitNode = true;
+                hostname = "hv-2";
+                acceptDns = true;
+                acceptRoutes = false;
+                authDns = true;
+                hostRoutes = true;
+              };
+            };
           };
           modules = commonModules ++ hypervisorModules ++ firewallModules ++ [
             ./hypervisors/hv-2/hv-2.nix
