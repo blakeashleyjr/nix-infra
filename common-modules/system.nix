@@ -230,7 +230,7 @@
   '';
 
   # No mutable users by default
-  users.mutableUsers = false;
+  # users.mutableUsers = false;
 
   ## General
 
