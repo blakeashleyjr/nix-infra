@@ -10,49 +10,7 @@
 
   # Define the timezone
   time.timeZone = "America/Los_Angeles";
-
-  # Boot loader configuration
-  boot.loader.grub = {
-    enable = true;
-    version = 2;
-    device = "nodev"; # For UEFI, grub installs to the ESP, not a device
-    efiSupport = true;
-    efiInstallAsRemovable = true; # Install GRUB as a removable EFI application
-  };
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Define ESP
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-label/ESP";
-    fsType = "vfat";
-  };
-
-  # Root filesystem (Btrfs with subvolumes)
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/root";
-    fsType = "btrfs";
-    options = [ "subvol=/rootfs" ]; # Mount the rootfs subvolume
-  };
-
-  # Home subvolume
-  fileSystems."/home" = {
-    device = "/dev/disk/by-label/root";
-    fsType = "btrfs";
-    options = [ "subvol=/home", "compress=zstd" ];
-  };
-
-  # Nix subvolume
-  fileSystems."/nix" = {
-    device = "/dev/disk/by-label/root";
-    fsType = "btrfs";
-    options = [ "subvol=/nix", "compress=zstd", "noatime" ];
-  };
-
-  # Swap configuration
-  swapDevices = [
-    { device = "/dev/disk/by-label/plainSwap"; }
-  ];
-
+  
   # Networking configuration for systemd-networkd
   systemd.services."systemd-networkd".environment.SYSTEMD_LOG_LEVEL = "debug";
 
