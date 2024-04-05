@@ -100,7 +100,7 @@
         linkConfig.RequiredForOnline = "carrier";
       };
 
-      # VLAN5 interface is now part of the bridge
+      # VLAN5 interface configuration
       "vlan5" = {
         matchConfig.Name = "vlan5";
         networkConfig.DHCP = false;
@@ -108,7 +108,7 @@
         networkConfig.Address = [ "10.173.5.70/24" ];
         networkConfig.Gateway = "10.173.5.1";
         networkConfig.DNS = [ "1.1.1.1" ];
-        linkConfig.RequiredForOnline = "yes"; # The bridge itself needs to be online
+        linkConfig.RequiredForOnline = "yes";
       };
     };
   };
