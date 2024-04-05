@@ -5,7 +5,7 @@ let
   blake = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK29aC0ZvTjltZcJkPHSGn01Zlhywr1QJZVtKQ8U3YU1 blake@ashleyjr.com";
 
   ## hypervisors
-  hv-2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA3h2qW4GGAlUv1dEn5/5YgrkbHGifplsjK0lJ/l1eAC root@nixos";
+  hv-2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHcdMNsm3Rgpx8Ci1Pc+yWcvIheU3AmvxPzNLETmPM+s root@nixos";
 
   ## workstations
 

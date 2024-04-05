@@ -59,104 +59,45 @@
         prompt: "Commit the changes to the flake and push the changes. Press enter when done"
       delegate_to: localhost
 
-    # Run disko command
+    - name: Clone the nix-infra repository
+      ansible.builtin.shell:
+        cmd: >
+          git clone https://github.com/blakeashleyjr/nix-infra.git
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    - name: Run the disko command
+      ansible.builtin.shell:
+        cmd: >
+          sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./nix-infra/hypervisors/hv-2/hv-2-disk-config.nix
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    - name: Copy git repo to new install root user
+      ansible.builtin.shell:
+        cmd: >
+          sudo cp -r ./nix-infra /mnt/root/
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    - name: Copy ssh hostkey to new install
+      ansible.builtin.shell:
+        cmd: >
+          sudo cp -r /etc/ssh/* /mnt/etc/ssh/
+      args:
+        executable: /run/current-system/sw/bin/bash
 
     # Run install command
-
-    # Set root password for testing so I can troubleshoot network issues
-
-    # Check if the host key is unchanged
-
-    # - name: Git clone the examples repo
-    #   ansible.builtin.shell:
-    #     cmd: git clone https://github.com/nix-community/nixos-anywhere-examples/ /tmp/nixos-anywhere-tmp
-
     - name: Stop to run command manually
       ansible.builtin.pause:
         prompt: "Stop to run command manually"
       delegate_to: localhost
 
-    - name: Install NixOS on the target machine using local clone of nixos-anywhere
-      ansible.builtin.shell:
-        cmd: >
-          nix run github:nix-community/nixos-anywhere --extra-experimental-features "nix-command flakes" -- --flake /tmp/nixos-anywhere-tmp/#hetzner-cloud root@{{ ansible_host }}
-      args:
-        executable: /run/current-system/sw/bin/bash
-      delegate_to: localhost
+    # Set root password for testing so I can troubleshoot network issues
+
+    # Check if the host key is unchanged
 
     - name: Wait for the machine to reboot
       ansible.builtin.wait_for_connection:
         delay: 60
         timeout: 300
-
-    - name: Prompt to add the SSH public key to the secrets.nix file
-      ansible.builtin.pause:
-        prompt: |
-          Add the following SSH public key to secrets.nix for {{ inventory_hostname }}:
-          {{ ssh_public_key_with_host.stdout }}
-          Press enter once done
-      delegate_to: localhost
-      run_once: true
-
-    - name: Agenix Rekey prompt
-      ansible.builtin.pause:
-        prompt: "Please run 'agenix -r' while in the ./secrets/ directory in a new terminal tab and press enter here once done"
-      delegate_to: localhost
-
-    - name: Git commit prompt
-      ansible.builtin.pause:
-        prompt: "Please commit the changes to the flake in another tab: git add . && git commit -a -Ss -m 'Add SSH public key for {{ inventory_hostname }}.' && git push"
-      delegate_to: localhost
-
- ## Reboot the system
- ## git clone the flake
- ## install the system: nixos-install --flake .#hv-2 --no-root-passwd
-
-
-    - name: Copy the private SSH key to the target serveradmin account
-      ansible.builtin.copy:
-        src: /tmp/id_ed25519
-        dest: /root/.ssh/id_ed25519
-        mode: '0600'
-      delegate_to: "{{ inventory_hostname }}"
-
-    - name: Copy the public SSH key to the target serveradmin account
-      ansible.builtin.copy:
-        src: /tmp/id_ed25519.pub
-        dest: /root/.ssh/id_ed25519.pub
-      delegate_to: "{{ inventory_hostname }}"
-
-    - name: Remove old private key in /tmp
-      ansible.builtin.file:
-        path: /tmp/id_ed25519
-        state: absent
-      delegate_to: localhost
-      run_once: true
-    
-    - name: Remove old public key in /tmp
-      ansible.builtin.file:
-        path: /tmp/id_ed25519.pub
-        state: absent
-      delegate_to: localhost
-      run_once: true
-
-    # - name: Reboot
-
-    # - name: Wait for the machine to reboot
-    #   ansible.builtin.wait_for_connection:
-    #     delay: 60
-    #     timeout: 300
-
-    # - name: Update known_hosts file to remove old host key
-    #   ansible.builtin.shell: |
-    #     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "{{ ansible_host }}"
-    #   delegate_to: localhost
-      
-    # - name: Apply custom flake configuration
-    #   ansible.builtin.shell: |
-    #     nixos-rebuild switch --flake github:blakeashleyjr/nix-infra#hv-2 --target-host root@{{ inventory_hostname }}
-    #   args:
-    #     executable: /run/current-system/sw/bin/bash
-    #   environment:
-    #     NIX_PATH: nixpkgs=channel:nixos-unstable
-
