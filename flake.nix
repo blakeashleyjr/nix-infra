@@ -18,7 +18,7 @@
 
   outputs = { self, nixpkgs, disko, agenix, hyprland, ... } @ inputs: {
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
-    defaultPackage.x86_64-linux = self.formatter.x86_64-linux;
+    packages.x86_64-linux.default = self.formatter.x86_64-linux;
     nixosConfigurations =
       let
         commonModules = [
