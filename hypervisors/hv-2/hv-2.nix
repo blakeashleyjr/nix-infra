@@ -97,6 +97,7 @@
         networkConfig.Bond = "bond1";
         networkConfig.DHCP = false;
         linkConfig.RequiredForOnline = "enslaved";
+        linkConfig.RequiredForOnline = "carrier";
       };
 
       # Bond1 interface configuration
