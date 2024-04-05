@@ -93,6 +93,13 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
+    - name: git pull the nix-infra repository for the secrets changes
+      ansible.builtin.shell:
+        cmd: >
+          sudo git -C /root/nix-infra pull
+      args:
+        executable: /run/current-system/sw/bin/bash
+
     # Run install command again but with the new host keys to decrypt the secrets
     # Set root password for testing so I can troubleshoot network issues
     - name: Stop to run command manually
