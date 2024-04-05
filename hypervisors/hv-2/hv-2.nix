@@ -97,36 +97,36 @@
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "carrier";
-        vlan [ "vlan5" ];
-        };
+        vlan = [ "vlan5" ];
+      };
 
-        # VLAN5 interface configuration
-        "vlan5" = {
-          matchConfig.Name = "vlan5";
-          networkConfig.DHCP = false;
-          networkConfig.LinkLocalAddressing = "no";
-          networkConfig.Address = [ "10.173.5.70/24" ];
-          networkConfig.Gateway = "10.173.5.1";
-          networkConfig.DNS = [ "1.1.1.1" ];
-          linkConfig.RequiredForOnline = "yes";
-        };
+      # VLAN5 interface configuration
+      "vlan5" = {
+        matchConfig.Name = "vlan5";
+        networkConfig.DHCP = false;
+        networkConfig.LinkLocalAddressing = "no";
+        networkConfig.Address = [ "10.173.5.70/24" ];
+        networkConfig.Gateway = "10.173.5.1";
+        networkConfig.DNS = [ "1.1.1.1" ];
+        linkConfig.RequiredForOnline = "yes";
       };
     };
+  };
 
-    # Hardware configuration
-    boot.initrd.availableKernelModules = [
-      "xhci_pci"
-      "ahci"
-      "nvme"
-      "usbhid"
-      "usb_storage"
-      "sd_mod"
-      "sr_mod"
-    ];
-    boot.initrd.kernelModules = [ "dm-snapshot" ];
-    boot.kernelModules = [ "kvm-amd" ];
-    boot.extraModulePackages = [ ];
+  # Hardware configuration
+  boot.initrd.availableKernelModules = [
+    "xhci_pci"
+    "ahci"
+    "nvme"
+    "usbhid"
+    "usb_storage"
+    "sd_mod"
+    "sr_mod"
+  ];
+  boot.initrd.kernelModules = [ "dm-snapshot" ];
+  boot.kernelModules = [ "kvm-amd" ];
+  boot.extraModulePackages = [ ];
 
-    nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-    hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-  }
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+}
