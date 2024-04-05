@@ -17,16 +17,14 @@
   systemd.network = {
     enable = true;
 
-    # Define network devices including bond interfaces and VLANs
     netdevs = {
-      # LACP bond configuration
       "bond0" = {
         netdevConfig = {
           Kind = "bond";
           Name = "bond0";
         };
         bondConfig = {
-          Mode = "802.3ad"; # LACP mode for bonding
+          Mode = "802.3ad";
           MIIMonitorSec = 100;
           UpDelaySec = 200;
           DownDelaySec = 200;
@@ -34,8 +32,6 @@
           LACPTransmitRate = "fast";
         };
       };
-
-      # Active-backup bond configuration including bond0 and enp37s0
       "bond1" = {
         netdevConfig = {
           Kind = "bond";
@@ -47,25 +43,14 @@
           PrimaryReselectPolicy = "always";
         };
       };
-
-      # VLAN5 on top of the bond1
-      "vlan5" = {
-        netdevConfig = {
-          Kind = "vlan";
-          Name = "vlan5";
-        };
-        vlanConfig = {
-          Id = 5;
-          # Link = "bond1"; # Not allowed
-        };
-      };
-
-      # Bridge interface for VLAN5
       "br-vlan5" = {
         netdevConfig = {
           Kind = "bridge";
           Name = "br-vlan5";
         };
+        # bridgeConfig = {
+        #   VLANFiltering = true;
+        # };
       };
     };
 
@@ -76,57 +61,38 @@
         networkConfig.DHCP = false;
         linkConfig.RequiredForOnline = "enslaved";
       };
-
       "enp16s0f1" = {
         matchConfig.Name = "enp16s0f1";
         networkConfig.Bond = "bond0";
         networkConfig.DHCP = false;
         linkConfig.RequiredForOnline = "enslaved";
       };
-
       "enp37s0" = {
         matchConfig.Name = "enp37s0";
         networkConfig.Bond = "bond1";
         networkConfig.DHCP = false;
         linkConfig.RequiredForOnline = "enslaved";
       };
-
-      # Configuration for bond0 as part of bond1
-      "bond0" = {
-        matchConfig.Name = "bond0";
-        networkConfig.Bond = "bond1";
-        networkConfig.DHCP = false;
-        linkConfig.RequiredForOnline = "enslaved";
-        linkConfig.RequiredForOnline = "carrier";
-      };
-
-      # Bond1 interface configuration
       "bond1" = {
         matchConfig.Name = "bond1";
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "carrier";
       };
-
-      # VLAN5 interface is now part of the bridge
-      "vlan5" = {
-        matchConfig.Name = "vlan5";
-        networkConfig.Bridge = "br-vlan5"; # Attach VLAN5 to the bridge
-        networkConfig.DHCP = false;
-        networkConfig.LinkLocalAddressing = "no";
-        linkConfig.RequiredForOnline = "no"; # We don't require VLAN5 itself to be online since the bridge will handle connectivity
-      };
-
-      # Bridge interface configuration for VLAN5 with network settings
       "br-vlan5" = {
         matchConfig.Name = "br-vlan5";
+        networkConfig.DHCP = false;
         networkConfig.Address = [ "10.173.5.70/24" ];
         networkConfig.Gateway = "10.173.5.1";
         networkConfig.DNS = [ "1.1.1.1" ];
-        linkConfig.RequiredForOnline = "yes"; # The bridge itself needs to be online
+        networkConfig.VLAN = [
+          { Id = 5; Link = "bond1"; }
+        ];
+        linkConfig.RequiredForOnline = "yes";
       };
     };
   };
+
 
   # Hardware configuration
   boot.initrd.availableKernelModules = [

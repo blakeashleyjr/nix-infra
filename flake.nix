@@ -18,7 +18,7 @@
 
   outputs = { self, nixpkgs, disko, agenix, hyprland, ... } @ inputs: {
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
-    defaultPackage.x86_64-linux = self.formatter.x86_64-linux;
+    packages.x86_64-linux.default = self.formatter.x86_64-linux;
     nixosConfigurations =
       let
         commonModules = [
@@ -40,24 +40,26 @@
         ];
       in
       {
-        hv-2 = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = {
-            inherit inputs;
-            vrrpPriority = {
-              WAN_VIP = 100;
-              LAN_VIP = 100;
+        hv-2 = {
+          config = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = {
+              inherit inputs;
+              vrrpPriority = {
+                WAN_VIP = 100;
+                LAN_VIP = 100;
+              };
+              role = "server"; # k3s role
+              clusterInit = true;
+              serverAddr = "10.173.5.70"; # Example IP address
+              # token = "example-token"; # Example token // Set once the cluster is initialized
             };
-            role = "server"; # k3s role
-            clusterInit = true;
-            serverAddr = "10.173.5.70"; # Example IP address
-            # token = "example-token"; # Example token // Set once the cluster is initialized
+            modules = commonModules ++ hypervisorModules ++ firewallModules ++ [
+              ./hypervisors/hv-2/hv-2.nix
+              ./hypervisors/hv-modules/hv-k3s.nix
+              ./hypervisors/hv-modules/hv-firewall.nix
+            ];
           };
-          modules = commonModules ++ hypervisorModules ++ firewallModules ++ [
-            ./hypervisors/hv-2/hv-2.nix
-            ./hypervisors/hv-modules/hv-k3s.nix
-            ./hypervisors/hv-modules/hv-firewall.nix
-          ];
         };
         # Add more hypervisor configurations as needed
       };
