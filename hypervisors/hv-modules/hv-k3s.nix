@@ -1,7 +1,10 @@
 { config, pkgs, lib, ... }@args:
 let
-  # Determine if token should be included in the configuration
-  optionalTokenConfig = if args.clusterInit then { } else { token = args.token; };
+  # Ensure `clusterInit` has a default value if not provided in `args`
+  clusterInit = args.clusterInit or false; # Defaults to false if not defined
+
+  # Now `clusterInit` is guaranteed to be defined, so we can safely use it
+  optionalTokenConfig = if clusterInit then { } else { token = args.token; };
 
 in
 {

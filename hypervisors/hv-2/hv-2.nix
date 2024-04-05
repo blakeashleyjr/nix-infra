@@ -1,10 +1,41 @@
 { modulesPath, config, lib, pkgs, ... }: {
   imports = [
-    (modulesPath + "/installer/scan/not-detected.nix")
-    (modulesPath + "/profiles/qemu-guest.nix")
+    # Import the configuration for the disk
     ./hv-2-disk-config.nix
+
+    # Common modules
+    ../../common-modules/nvidia.nix
+    ../../common-modules/system.nix
+    ../../common-modules/tailscale.nix
+
+    # Common modules
+    ../../inputs/agenix.nixosModules.default
+    ../../inputs/disko.nixosModules.disko
+
+    # Hypervisor modules
+    ../hypervisors/hv-modules/hv-users.nix
+    ../hypervisors/hv-modules/hv-base.nix
+
+    # Make this system a firewall
+    ../hypervisors/hv-modules/hv-firewall.nix
+
+    # Make this system a k3s server
+    ../hypervisors/hv-modules/hv-k3s.nix
   ];
 
+  # Machine-specific settings
+  services.k3s = {
+    role = "server";
+    clusterInit = true;
+    serverAddr = "10.173.5.70";
+  };
+
+  # Example: Define vrrpPriority directly in this file
+  networking.vrrpPriority = {
+    WAN_VIP = 100;
+    LAN_VIP = 100;
+  };
+  
   # Define the hostname
   networking.hostName = "hv-2";
 
