@@ -32,6 +32,33 @@
         prompt: "Run bootstrap.sh on the remote machine and press enter when done"
       delegate_to: localhost
 
+    - name: Clone the nix-infra repository
+      ansible.builtin.shell:
+        cmd: >
+          git clone https://github.com/blakeashleyjr/nix-infra.git
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    - name: Run the disko command
+      ansible.builtin.shell:
+        cmd: >
+          sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./nix-infra/hypervisors/hv-2/hv-2-disk-config.nix
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    - name: Copy git repo to new install root user
+      ansible.builtin.shell:
+        cmd: >
+          sudo cp -r ./nix-infra /mnt/root/
+      args:
+        executable: /run/current-system/sw/bin/bash
+
+    # Run install command first that downloads the paths but regenerates the host keys
+    - name: Stop to run command manually
+      ansible.builtin.pause:
+        prompt: "Stop to run command manually"
+      delegate_to: localhost
+
     - name: Print the SSH public key and prompt to add it
       ansible.builtin.shell:
         cmd: sudo cat /etc/ssh/ssh_host_ed25519_key.pub
@@ -59,44 +86,21 @@
         prompt: "Commit the changes to the flake and push the changes. Press enter when done"
       delegate_to: localhost
 
-    - name: Clone the nix-infra repository
-      ansible.builtin.shell:
-        cmd: >
-          git clone https://github.com/blakeashleyjr/nix-infra.git
-      args:
-        executable: /run/current-system/sw/bin/bash
-
-    - name: Run the disko command
-      ansible.builtin.shell:
-        cmd: >
-          sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./nix-infra/hypervisors/hv-2/hv-2-disk-config.nix
-      args:
-        executable: /run/current-system/sw/bin/bash
-
-    - name: Copy git repo to new install root user
-      ansible.builtin.shell:
-        cmd: >
-          sudo cp -r ./nix-infra /mnt/root/
-      args:
-        executable: /run/current-system/sw/bin/bash
-
-    # Run install command
-    - name: Stop to run command manually
-      ansible.builtin.pause:
-        prompt: "Stop to run command manually"
-      delegate_to: localhost
-
     - name: Copy ssh hostkey to new install
       ansible.builtin.shell:
         cmd: >
           sudo cp -r /etc/ssh/* /mnt/etc/ssh/
       args:
         executable: /run/current-system/sw/bin/bash
+
+    # Run install command again but with the new host keys to decrypt the secrets
     # Set root password for testing so I can troubleshoot network issues
+    - name: Stop to run command manually
+      ansible.builtin.pause:
+        prompt: "Stop to run command manually"
+      delegate_to: localhost
 
-    # Check if the host key is unchanged
-
-    - name: Wait for the machine to reboot
-      ansible.builtin.wait_for_connection:
-        delay: 60
-        timeout: 300
+    # - name: Wait for the machine to reboot
+    #   ansible.builtin.wait_for_connection:
+    #     delay: 60
+    #     timeout: 300
