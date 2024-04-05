@@ -9,9 +9,9 @@ let
 
   ## workstations
 
-  ## assignments
+  ## assignments (make sure to add to the users/systems list below)
   users = [ blake ];
-  hv = [ ];
+  hv = [ hv-2 ];
   ws = [ ];
 in
 {
