@@ -6,7 +6,7 @@ declare -A HOST_CONFIG=(
 )
 
 # List of Nix packages to install
-NIX_PACKAGES="python312 git wget"
+NIX_PACKAGES="python312 git wget tmux"
 
 # Hostname passed as a script argument
 HOSTNAME=$1
