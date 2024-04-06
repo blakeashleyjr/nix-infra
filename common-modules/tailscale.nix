@@ -149,6 +149,8 @@ in
   config = lib.mkIf isEnabled {
     environment.systemPackages = [ pkgs.tailscale ];
 
+    services.tailscale.enable = true;
+
     systemd.services.tailscale-autoconnect = {
       description = "Automatic connection to Tailscale";
       after = [ "network-online.target" "tailscaled.service" ]; # Ensure tailscaled is started and network is online
