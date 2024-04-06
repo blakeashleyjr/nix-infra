@@ -43,13 +43,6 @@
       {
         hv-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = {
-            inherit inputs;
-            role = "server"; # k3s role
-            clusterInit = true;
-            serverAddr = "10.173.5.70"; # Example IP address
-            # token = "example-token"; # Example token // Set once the cluster is initialized
-          };
           modules = commonModules ++ hypervisorModules ++ firewallModules ++ [
             ./hypervisors/hv-2/hv-2.nix
             ./hypervisors/hv-modules/hv-k3s.nix
