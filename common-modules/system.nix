@@ -22,7 +22,7 @@
 
   environment.systemPackages = with pkgs; [
     # System management and orchestration
-    ansible # Automation tool for software provisioning, configuration management, and application deployment
+    # ansible # Automation tool for software provisioning, configuration management, and application deployment
 
     # Text editors and file viewers
     nano # Easy to use text editor

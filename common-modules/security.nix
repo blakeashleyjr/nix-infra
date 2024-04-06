@@ -90,7 +90,7 @@ with lib;
     max-free = mkDefault (3000 * 1024 * 1024); # Set maximum free space to prevent disk full issues.
     min-free = mkDefault (512 * 1024 * 1024); # Set minimum free space to ensure system responsiveness.
     builders-use-substitutes = true; # Prefer using substitutes when available to reduce build times.
-    allowed-users = mkDefault [ "@users" ]; # Restrict Nix build users for security.
+    allowed-users = mkDefault [ "@wheel" ]; # Restrict Nix usage to the wheel group.
   };
 
   systemd.services.nix-daemon.serviceConfig.OOMScoreAdjust = mkDefault 250; # Prioritize important services over builds.

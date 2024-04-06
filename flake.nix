@@ -49,9 +49,10 @@
             ./hypervisors/hv-modules/hv-firewall.nix
             ({ pkgs, config, lib, ... }: {
               hv-Firewall.vrrpPriority = {
-                WAN_VIP = 100;
-                LAN_VIP = 100;
+                WAN_VIP = 90;
+                LAN_VIP = 90;
               };
+              # Define Tailscale and k3s settings here TODO
             })
           ];
         };
