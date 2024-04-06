@@ -142,12 +142,21 @@ in
         require_dnssec = true;
         static = {
           "NextDNS-${config.age.secrets."nextdns-config".path}" = {
-            stamp = config.age.secrets."nextdns-config-stamp".path;
+            stamp = "sdns://${config.age.secrets."nextdns-config-stamp".path}";
           };
         };
       };
     };
 
+    # # Mount a tmpfs for the dnscrypt-proxy cache
+    # fileSystems."/run/dnscrypt-proxy" = {
+    #   fsType = "tmpfs";
+    #   device = "tmpfs";
+    #   options = [
+    #     "nosuid" "nodev" "noexec"
+    #     "size=50M"
+    #   ];
+    # };
 
     services.keepalived.enable = true;
 
