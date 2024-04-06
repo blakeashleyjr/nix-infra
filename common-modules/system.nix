@@ -43,6 +43,7 @@
     nmap # Network exploration tool and security / port scanner
     traceroute # Tracks the route packets take to a network host
     wget # Utility for non-interactive download of files from the web
+    tailscale # Tailscale for VPN
 
     # Programming languages and runtime
     go # The Go programming language

@@ -37,6 +37,9 @@
         firewallModules = [
           ./hypervisors/hv-modules/hv-firewall.nix
         ];
+        k3sModules = [
+          ./hypervisors/hv-modules/hv-k3s.nix
+        ];
         workstationModules = [
           hyprland.nixosModules.default
         ];
@@ -44,16 +47,21 @@
       {
         hv-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          modules = commonModules ++ hypervisorModules ++ firewallModules ++ [
+          modules = commonModules ++ hypervisorModules ++ firewallModules ++ k3sModules ++ [
             ./hypervisors/hv-2/hv-2.nix
-            ./hypervisors/hv-modules/hv-k3s.nix
-            ./hypervisors/hv-modules/hv-firewall.nix
             ({ pkgs, config, lib, ... }: {
-              hv-Firewall.vrrpPriority = {
-                WAN_VIP = 90;
-                LAN_VIP = 90;
+              config = {
+                # Properly nest hv-Firewall configuration under `config`
+                hv-Firewall.vrrpPriority = {
+                  WAN_VIP = 90;
+                  LAN_VIP = 90;
+                };
+                tailscale.enable = true;
+                tailscale.hostname = "hv-2";
+                tailscale.ssh = true;
+                tailscale.exitNode = true;
+                tailscale.exitNodeAllowLANAccess = true;
               };
-              # Define Tailscale and k3s settings here TODO
             })
           ];
         };
