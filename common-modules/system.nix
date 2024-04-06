@@ -111,14 +111,6 @@
         ChallengeResponseAuthentication = false;
         GSSAPIAuthentication = false;
         X11Forwarding = false;
-        allowSFTP = false;
-        extraConfig = ''
-          AllowTcpForwarding yes
-          X11Forwarding no
-          AllowAgentForwarding no
-          AllowStreamLocalForwarding no
-          AuthenticationMethods publickey
-        '';
       };
     };
   };
