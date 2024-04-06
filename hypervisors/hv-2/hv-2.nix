@@ -7,7 +7,10 @@
 
   # Define the hostname
   networking.hostName = "hv-2";
-
+  networking = {
+    nameservers = [ "127.0.0.1" "::1" ];
+  };
+  
   # Define the timezone
   time.timeZone = "America/Los_Angeles";
 
@@ -107,7 +110,7 @@
         networkConfig.LinkLocalAddressing = "no";
         networkConfig.Address = [ "10.173.5.70/24" ];
         networkConfig.Gateway = "10.173.5.1";
-        networkConfig.DNS = [ "1.1.1.1" ];
+        networkConfig.DNS = [ "127.0.0.1:53" ];
         linkConfig.RequiredForOnline = "yes";
       };
     };
