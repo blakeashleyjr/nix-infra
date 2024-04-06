@@ -134,6 +134,25 @@ in
         listen_addresses = [ "[::1]:53" ];
         ipv6_servers = true;
         require_dnssec = true;
+        bootstrap_resolvers = ["9.9.9.11:53" "1.1.1.1:53"];
+        # Maximum log files size in MB - Set to 0 for unlimited.
+        log_files_max_size = 10;
+        # How long to keep backup files, in days
+        log_files_max_age = 7;
+        # Maximum log files backups to keep (or 0 to keep all backups)
+        log_files_max_backups = 1;
+        ## Enable a DNS cache to reduce latency and outgoing traffic
+        cache = true;
+        ## Cache size
+        cache_size = 4096;
+        ## Minimum TTL for cached entries
+        cache_min_ttl = 2400;
+        ## Maximum TTL for cached entries
+        cache_max_ttl = 86400;
+        ## Minimum TTL for negatively cached entries
+        cache_neg_min_ttl = 60;
+        ## Maximum TTL for negatively cached entries
+        cache_neg_max_ttl = 600;
         static = {
           "NextDNS-f33fea" = {
             stamp = "sdns://AgEAAAAAAAAAAAAOZG5zLm5leHRkbnMuaW8HL2YzM2ZlYQ";
@@ -142,15 +161,19 @@ in
       };
     };
 
-    # # Mount a tmpfs for the dnscrypt-proxy cache
-    # fileSystems."/run/dnscrypt-proxy" = {
-    #   fsType = "tmpfs";
-    #   device = "tmpfs";
-    #   options = [
-    #     "nosuid" "nodev" "noexec"
-    #     "size=50M"
-    #   ];
-    # };
+    systemd.services.dnscrypt-proxy2.serviceConfig = {
+      StateDirectory = "dnscrypt-proxy";
+    };
+
+    # Mount a tmpfs for the dnscrypt-proxy cache
+    fileSystems."/run/dnscrypt-proxy" = {
+      fsType = "tmpfs";
+      device = "tmpfs";
+      options = [
+        "nosuid" "nodev" "noexec"
+        "size=50M"
+      ];
+    };
 
     services.keepalived.enable = true;
 
