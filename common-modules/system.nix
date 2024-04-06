@@ -16,7 +16,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  # networking.useNetworkd = true; # removes warning but broke everything
+
+  # Use systemd-networkd for network management
+  networking.useNetworkd = true;
+  networking.useDHCP = false; # Ensure this is explicitly set to avoid conflicts
 
   # Allow unfree
   nixpkgs.config.allowUnfree = true;
