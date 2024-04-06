@@ -95,20 +95,28 @@ in
         enable = true;
         content = ''
           chain input {
-            type filter hook input priority 0; 
+            type filter hook input priority 0;
+            # Allow established and related connections
             ct state {established, related} accept;
+            # Allow DNS queries from specified LAN DNS forwarders to the DNS server
             iifname "${config.hv-Firewall.lanInterface}" ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.dnsForwardingAddresses} } udp dport 53 accept;
+            # Explicitly drop all incoming connections on the WAN interface
             iifname "${config.hv-Firewall.wanInterface}" drop;
           }
           chain forward {
-            type filter hook forward priority 0; 
-            policy accept;
+            type filter hook forward priority 0;
+            # Only allow forwarding of established or related connections
+            ct state {established, related} accept;
+            # Drop all other forwarded packets by default
+            policy drop;
           }
           chain output {
-            type filter hook output priority 0; 
+            type filter hook output priority 0;
+            # Accept all outbound packets initiated from within your network
             policy accept;
           }
         '';
+
       };
       nat = {
         name = "nat";
