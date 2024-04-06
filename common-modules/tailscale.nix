@@ -138,71 +138,76 @@
 
     args = lib.mkOption {
       type = lib.types.attrsOf lib.types.string;
-      default = {};
+      default = { };
       description = "Additional arguments to pass to Tailscale.";
     };
-    
+
   };
 
 
-  config = let
-    tailscaleAuthKey = config.tailscale.authKeyPath;
+  config =
+    let
+      tailscaleAuthKey = config.tailscale.authKeyPath;
 
-    # Dynamically include user-specified args if any
-    userArgs = lib.optionalAttrs (config.tailscale.args != {});
+      # Dynamically include user-specified args if any
+      userArgs = lib.optionalAttrs (config.tailscale.args != { });
 
-    tailscaleArgs = {
-      configureTailscale = config.tailscale.configureTailscale;
-      advertiseRoutes = config.tailscale.advertiseRoutes;
-      advertiseExitNode = config.tailscale.advertiseExitNode;
-      hostname = config.tailscale.hostname;
-      acceptDns = config.tailscale.acceptDns;
-      acceptRoutes = config.tailscale.acceptRoutes;
-      authDns = config.tailscale.authDns;
-      hostRoutes = config.tailscale.hostRoutes;
-      ssh = config.tailscale.ssh;
-      advertiseTags = config.tailscale.advertiseTags;
-      exitNode = config.tailscale.exitNode;
-      exitNodeAllowLANAccess = config.tailscale.exitNodeAllowLANAccess;
-      loginServer = config.tailscale.loginServer;
-      netfilterMode = config.tailscale.netfilterMode;
-      operator = config.tailscale.operator;
-      qr = config.tailscale.qr;
-      shieldsUp = config.tailscale.shieldsUp;
-      timeout = config.tailscale.timeout;
-      acceptRisk = config.tailscale.acceptRisk;
-      forceReauth = config.tailscale.forceReauth;
-      reset = config.tailscale.reset;
-    } // config.tailscale.args;
+      tailscaleArgs = {
+        configureTailscale = config.tailscale.configureTailscale;
+        advertiseRoutes = config.tailscale.advertiseRoutes;
+        advertiseExitNode = config.tailscale.advertiseExitNode;
+        hostname = config.tailscale.hostname;
+        acceptDns = config.tailscale.acceptDns;
+        acceptRoutes = config.tailscale.acceptRoutes;
+        authDns = config.tailscale.authDns;
+        hostRoutes = config.tailscale.hostRoutes;
+        ssh = config.tailscale.ssh;
+        advertiseTags = config.tailscale.advertiseTags;
+        exitNode = config.tailscale.exitNode;
+        exitNodeAllowLANAccess = config.tailscale.exitNodeAllowLANAccess;
+        loginServer = config.tailscale.loginServer;
+        netfilterMode = config.tailscale.netfilterMode;
+        operator = config.tailscale.operator;
+        qr = config.tailscale.qr;
+        shieldsUp = config.tailscale.shieldsUp;
+        timeout = config.tailscale.timeout;
+        acceptRisk = config.tailscale.acceptRisk;
+        forceReauth = config.tailscale.forceReauth;
+        reset = config.tailscale.reset;
+      } // config.tailscale.args;
 
-    optionalTailscaleConfig = if tailscaleArgs.configureTailscale then
-      lib.strings.concatStringsSep " "
-        (lib.attrsets.mapAttrsToList (name: value:
-          let
-            toString = v: if v == true then "true" else if v == false then "false" else v;
-          in
-          if value == "" || value == false then ""
-          else "--${name}=${toString value}"
-        ) tailscaleArgs)
-    else "";
-  in {
-    services.tailscale.enable = config.tailscale.enable;
+      optionalTailscaleConfig =
+        if tailscaleArgs.configureTailscale then
+          lib.strings.concatStringsSep " "
+            (lib.attrsets.mapAttrsToList
+              (name: value:
+                let
+                  toString = v: if v == true then "true" else if v == false then "false" else v;
+                in
+                if value == "" || value == false then ""
+                else "--${name}=${toString value}"
+              )
+              tailscaleArgs)
+        else "";
+    in
+    {
+      services.tailscale.enable = config.tailscale.enable;
 
-    systemd.services.tailscale-autoconnect = {
-      description = "Automatic connection to Tailscale";
-      after = [ "network-pre.target" "tailscale.service" ];
-      wants = [ "network-pre.target" "tailscale.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig.Type = "oneshot";
+      systemd.services.tailscale-autoconnect = {
+        description = "Automatic connection to Tailscale";
+        after = [ "network-pre.target" "tailscale.service" ];
+        wants = [ "network-pre.target" "tailscale.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig.Type = "oneshot";
 
-      script = ''
-        sleep 2
-        status="$(${pkgs.tailscale}/bin/tailscale status -json | ${pkgs.jq}/bin/jq -r .BackendState)"
-        if [ "$status" = "Running" ]; then
-          exit 0
-        fi
-        ${pkgs.tailscale}/bin/tailscale up ${optionalTailscaleConfig} --authkey $(cat ${tailscaleAuthKey})
-      '';
+        script = ''
+          sleep 2
+          status="$(${pkgs.tailscale}/bin/tailscale status -json | ${pkgs.jq}/bin/jq -r .BackendState)"
+          if [ "$status" = "Running" ]; then
+            exit 0
+          fi
+          ${pkgs.tailscale}/bin/tailscale up ${optionalTailscaleConfig} --authkey $(cat ${tailscaleAuthKey})
+        '';
+      };
     };
-  };
 }

@@ -3,7 +3,7 @@
 let
   cfg = config.services.keepalived;
   wanGatewayPath = config.hv-Firewall.wanGatewayPath;
-  
+
   # Scripts to dynamically adjust the default gateway using the secret
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
     #!/bin/sh
@@ -195,16 +195,16 @@ in
       }
     ];
 
-  # Use environment.etc to place the scripts at the specific path
-  environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
-    #!/bin/sh
-    WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-    ip route add default via $WAN_GATEWAY_IP
-  '';
-  environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
-    #!/bin/sh
-    WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-    ip route del default via $WAN_GATEWAY_IP
-  '';
-};
+    # Use environment.etc to place the scripts at the specific path
+    environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
+      #!/bin/sh
+      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+      ip route add default via $WAN_GATEWAY_IP
+    '';
+    environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
+      #!/bin/sh
+      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+      ip route del default via $WAN_GATEWAY_IP
+    '';
+  };
 }
