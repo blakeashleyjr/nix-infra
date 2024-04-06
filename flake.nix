@@ -56,11 +56,13 @@
                   WAN_VIP = 90;
                   LAN_VIP = 90;
                 };
-                tailscale.enable = true;
-                tailscale.hostname = "hv-2";
-                tailscale.ssh = true;
-                tailscale.exitNode = true;
-                tailscale.exitNodeAllowLANAccess = true;
+                tailscale = {
+                  enable = true;
+                  hostname = "hv-2";
+                  ssh = true;
+                  exitNode = true;
+                  exitNodeAllowLANAccess = true;
+                };
               };
             })
           ];
