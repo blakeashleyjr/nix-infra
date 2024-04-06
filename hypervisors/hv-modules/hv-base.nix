@@ -1,6 +1,10 @@
 { config, pkgs, lib, ... }@args:
 {
 
+  # Use systemd-networkd for network management
+  networking.useNetworkd = true;
+  networking.useDHCP = false; # Ensure this is explicitly set to avoid conflicts
+
   # No need for sound on a server
   sound.enable = false;
 
