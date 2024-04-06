@@ -25,6 +25,7 @@
           ./common-modules/nvidia.nix
           ./common-modules/system.nix
           ./common-modules/tailscale.nix
+          ./common-modules/security.nix
           # ./secrets/secrets.nix
           disko.nixosModules.disko
           agenix.nixosModules.default

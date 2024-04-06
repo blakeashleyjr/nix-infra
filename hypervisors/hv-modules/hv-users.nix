@@ -4,7 +4,7 @@
     isNormalUser = true;
     description = "serveradmin";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "wheel" ];
     packages = with pkgs; [
 
     ];
