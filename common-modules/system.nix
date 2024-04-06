@@ -38,15 +38,15 @@
     zellij # A newer terminal multiplexer aiming to be user-friendly and customizable
 
     # Network tools
-    curl # Tool to transfer data from or to a server
-    iperf3 # Network bandwidth measurement tool
-    nmap # Network exploration tool and security / port scanner
-    traceroute # Tracks the route packets take to a network host
-    wget # Utility for non-interactive download of files from the web
+    # curl # Tool to transfer data from or to a server
+    # iperf3 # Network bandwidth measurement tool
+    # nmap # Network exploration tool and security / port scanner
+    # traceroute # Tracks the route packets take to a network host
+    # wget # Utility for non-interactive download of files from the web
 
     # Programming languages and runtime
-    go # The Go programming language
-    python3 # Python programming language, version 3
+    # go # The Go programming language
+    # python3 # Python programming language, version 3
 
     # System and performance monitoring
     gdu # Disk usage analyzer with console interface written in Go
@@ -56,9 +56,9 @@
     ncdu # NCurses Disk Usage, a disk usage analyzer with an ncurses interface
 
     # Disk and file management
-    gparted # Disk partitioning tool
-    rclone # Command-line program to manage files on cloud storage
-    rsync # Fast incremental file transfer
+    # gparted # Disk partitioning tool
+    # rclone # Command-line program to manage files on cloud storage
+    # rsync # Fast incremental file transfer
 
     # Containers and virtualization
     docker # Platform for developing, shipping, and running applications in containers
@@ -68,15 +68,15 @@
     jq # Lightweight and flexible command-line JSON processor
 
     # Performance testing
-    stress-ng # Stress test tool with more updated features than the original stress
+    # stress-ng # Stress test tool with more updated features than the original stress
 
     # Version control systems
     git # Distributed version control system
 
     # Shell environments
     fish # Friendly Interactive SHell, a smart and user-friendly command line shell
-    python311Packages.pexpect # Pure Python Expect-like module
-    expect # A tool for automating interactive applications
+    # python311Packages.pexpect # Pure Python Expect-like module
+    # expect # A tool for automating interactive applications
   ];
 
 
