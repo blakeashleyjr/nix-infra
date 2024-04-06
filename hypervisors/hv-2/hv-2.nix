@@ -51,6 +51,39 @@
         };
       };
 
+      # VLAN2 on top of the bond1
+      "vlan2" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = "vlan2";
+        };
+        vlanConfig = {
+          Id = 2;
+        };
+      };
+
+      # VLAN3 on top of the bond1
+      "vlan3" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = "vlan3";
+        };
+        vlanConfig = {
+          Id = 3;
+        };
+      };
+
+      # VLAN4 on top of the bond1
+      "vlan4" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = "vlan4";
+        };
+        vlanConfig = {
+          Id = 4;
+        };
+      };
+
       # VLAN5 on top of the bond1
       "vlan5" = {
         netdevConfig = {
@@ -59,7 +92,6 @@
         };
         vlanConfig = {
           Id = 5;
-          # Link = "bond1"; # Not allowed
         };
       };
     };
