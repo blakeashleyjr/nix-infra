@@ -80,6 +80,8 @@ with lib;
   ## Sudo and User Privilege Settings
   security.sudo.execWheelOnly = true; # Restrict sudo execution to the wheel group.
   security.sudo.extraConfig = "Defaults lecture = never"; # Disable sudo lectures for a cleaner user experience.
+  # Enable passwordless sudo for users in the 'wheel' group
+  security.sudo.wheelNeedsPassword = false;
 
   ## Nix and Systemd Settings for Build and Runtime Efficiency
   nix.settings = {
