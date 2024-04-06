@@ -18,10 +18,6 @@ in
   "tailscale-authkey.age".publicKeys = hv ++ ws ++ users;
   "wan-gateway.age".publicKeys = hv ++ users;
   "public-ip-1.age".publicKeys = hv ++ users;
-  "nextdns-config.age".publicKeys = hv ++ users;
-  "nextdns-config-stamp.age".publicKeys = hv ++ users;
-  # "nextdns-config-ws.age".publicKeys = ws ++ users;
-  # "nextdns-config-stamp-ws.age".publicKeys = ws ++ users;
   # "k3s-token-1.age".publicKeys = hv ++ users;
 }
 

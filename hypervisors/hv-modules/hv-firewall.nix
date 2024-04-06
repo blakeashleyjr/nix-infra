@@ -14,7 +14,6 @@ let
   # Generate the full path to the scripts as strings
   addGatewayScriptPath = "/run/agenix/add-gateway.sh";
   delGatewayScriptPath = "/run/agenix/del-gateway.sh";
-
 in
 {
   # Define custom options for this module
@@ -38,11 +37,6 @@ in
       type = lib.types.path;
       default = config.age.secrets."public-ip-1".path;
       description = "Path to the public IP 1 secret.";
-    };
-    nextdns-config-stampPath = lib.mkOption {
-      type = lib.types.path;
-      default = config.age.secrets."nextdns-config-stamp".path;
-      description = "Path to the NextDNS configuration stamp secret.";
     };
     dnsForwardingAddresses = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -136,13 +130,13 @@ in
     services.dnscrypt-proxy2 = {
       enable = true;
       settings = {
-        server_names = [ "NextDNS-${config.age.secrets."nextdns-config".path}" ];
+        server_names = [ "NextDNS-f33fea" ];
         listen_addresses = [ "[::1]:53" ];
         ipv6_servers = true;
         require_dnssec = true;
         static = {
-          "NextDNS-${config.age.secrets."nextdns-config".path}" = {
-            stamp = "sdns://${config.age.secrets."nextdns-config-stamp".path}";
+          "NextDNS-f33fea" = {
+            stamp = "sdns://AgEAAAAAAAAAAAAOZG5zLm5leHRkbnMuaW8HL2YzM2ZlYQ";
           };
         };
       };
