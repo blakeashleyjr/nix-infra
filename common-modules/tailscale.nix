@@ -151,8 +151,8 @@ in
 
     systemd.services.tailscale-autoconnect = {
       description = "Automatic connection to Tailscale";
-      after = [ "network-pre.target" "tailscale.service" ];
-      wants = [ "network-pre.target" "tailscale.service" ];
+      after = [ "network-online.target" "tailscaled.service" ]; # Ensure tailscaled is started and network is online
+      wants = [ "network-online.target" "tailscaled.service" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";
 
