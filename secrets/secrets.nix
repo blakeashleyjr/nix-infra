@@ -20,7 +20,9 @@ in
   "public-ip-1.age".publicKeys = hv ++ users;
   "nextdns-config.age".publicKeys = hv ++ users;
   "nextdns-config-stamp.age".publicKeys = hv ++ users;
-  "nextdns-config-ws.age".publicKeys = ws ++ users;
-  "nextdns-config-stamp-ws.age".publicKeys = ws ++ users;
+  # "nextdns-config-ws.age".publicKeys = ws ++ users;
+  # "nextdns-config-stamp-ws.age".publicKeys = ws ++ users;
   # "k3s-token-1.age".publicKeys = hv ++ users;
 }
+
+## Add all secrets to the secrets list in ./common-modules/system.nix

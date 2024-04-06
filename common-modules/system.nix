@@ -3,6 +3,16 @@
   # Version specification
   system.stateVersion = "23.11"; # Don't change
 
+  # Define all secrets
+  age.secrets = {
+    "tailscale-authkey".file = ../secrets/tailscale-authkey.age;
+    "wan-gateway".file = ../secrets/wan-gateway.age;
+    "public-ip-1".file = ../secrets/public-ip-1.age;
+    "nextdns-config".file = ../secrets/nextdns-config.age;
+    "nextdns-config-stamp".file = ../secrets/nextdns-config-stamp.age;
+    # Add additional secrets as necessary
+  };
+
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;

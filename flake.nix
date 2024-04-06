@@ -25,8 +25,9 @@
           ./common-modules/nvidia.nix
           ./common-modules/system.nix
           ./common-modules/tailscale.nix
-          agenix.nixosModules.default
+          # ./secrets/secrets.nix
           disko.nixosModules.disko
+          agenix.nixosModules.default
         ];
         hypervisorModules = [
           ./hypervisors/hv-modules/hv-users.nix
@@ -44,31 +45,21 @@
           system = "x86_64-linux";
           specialArgs = {
             inherit inputs;
-            vrrpPriority = {
-              WAN_VIP = 100;
-              LAN_VIP = 100;
-            };
             role = "server"; # k3s role
             clusterInit = true;
             serverAddr = "10.173.5.70"; # Example IP address
             # token = "example-token"; # Example token // Set once the cluster is initialized
-            tailscale = {
-              args = {
-                configureTailscale = true;
-                advertiseRoutes = "10.173.0.0/16";
-                advertiseExitNode = true;
-                hostname = "hv-2";
-                acceptDns = true;
-                acceptRoutes = false;
-                authDns = true;
-                hostRoutes = true;
-              };
-            };
           };
           modules = commonModules ++ hypervisorModules ++ firewallModules ++ [
             ./hypervisors/hv-2/hv-2.nix
             ./hypervisors/hv-modules/hv-k3s.nix
             ./hypervisors/hv-modules/hv-firewall.nix
+            ({ pkgs, config, lib, ... }: {
+              hv-Firewall.vrrpPriority = {
+                WAN_VIP = 100;
+                LAN_VIP = 100;
+              };
+            })
           ];
         };
         # Add more hypervisor configurations as needed
