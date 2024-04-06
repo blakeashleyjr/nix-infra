@@ -137,7 +137,7 @@
     };
 
     args = lib.mkOption {
-      type = lib.types.attrsOf lib.types.string;
+      type = lib.types.attrsOf lib.types.str;
       default = { };
       description = "Additional arguments to pass to Tailscale.";
     };
