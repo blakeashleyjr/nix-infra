@@ -97,7 +97,6 @@ with lib;
 
   ## Additional Security Measures
   boot.kernelPackages = mkDefault pkgs.linuxPackages_hardened; # Use hardened kernel for enhanced security.
-  environment.memoryAllocator.provider = mkDefault "scudo"; # Use Scudo allocator for defense against memory corruption.
   environment.variables.SCUDO_OPTIONS = mkDefault "ZeroContents=1"; # Ensure memory is zeroed out on free.
 
   security.allowSimultaneousMultithreading = false; # Disable SMT to protect against side-channel attacks.

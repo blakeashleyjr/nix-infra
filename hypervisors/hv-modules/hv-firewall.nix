@@ -134,7 +134,7 @@ in
         listen_addresses = [ "[::1]:53" ];
         ipv6_servers = true;
         require_dnssec = true;
-        bootstrap_resolvers = ["9.9.9.11:53" "1.1.1.1:53"];
+        bootstrap_resolvers = [ "9.9.9.11:53" "1.1.1.1:53" ];
         # Maximum log files size in MB - Set to 0 for unlimited.
         log_files_max_size = 10;
         # How long to keep backup files, in days
@@ -170,7 +170,9 @@ in
       fsType = "tmpfs";
       device = "tmpfs";
       options = [
-        "nosuid" "nodev" "noexec"
+        "nosuid"
+        "nodev"
+        "noexec"
         "size=50M"
       ];
     };
