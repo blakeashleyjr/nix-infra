@@ -46,11 +46,18 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
-    # Run install command first that downloads the paths but regenerates the host keys
-    - name: Stop to run command manually
+    - name: Reboot system and disconnect installation media
       ansible.builtin.pause:
-        prompt: "Stop to run command manually"
+        prompt: "Reboot the system and disconnect the installation media. Press enter when done"
       delegate_to: localhost
+
+    # Run install command first that downloads the paths but regenerates the host keys
+    - name: Run the first install command
+      ansible.builtin.shell:
+        cmd: >
+          sudo nixos install --flake ./nix-infra#{{ inventory_hostname }} --experimental-features "nix-command flakes" 
+      args:
+        executable: /run/current-system/sw/bin/bash
 
     - name: Print the SSH public key and prompt to add it
       ansible.builtin.shell:
@@ -134,7 +141,7 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
-    # - name: Wait for the machine to reboot
-    #   ansible.builtin.wait_for_connection:
-    #     delay: 60
-    #     timeout: 300
+    - name: Reboot system and disconnect installation media
+      ansible.builtin.pause:
+        prompt: "Reboot the system and disconnect the installation media. Press enter when done"
+      delegate_to: localhost
