@@ -46,16 +46,11 @@
       args:
         executable: /run/current-system/sw/bin/bash
 
-    - name: Reboot system and disconnect installation media
-      ansible.builtin.pause:
-        prompt: "Reboot the system and disconnect the installation media. Press enter when done"
-      delegate_to: localhost
-
     # Run install command first that downloads the paths but regenerates the host keys
     - name: Run the first install command
       ansible.builtin.shell:
         cmd: >
-          sudo nixos install --flake ./nix-infra#{{ inventory_hostname }} --experimental-features "nix-command flakes" 
+          sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }}
       args:
         executable: /run/current-system/sw/bin/bash
 

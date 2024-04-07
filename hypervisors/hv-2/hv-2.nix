@@ -51,38 +51,38 @@
         };
       };
 
-      # # VLAN2 on top of the bond1
-      # "vlan2" = {
-      #   netdevConfig = {
-      #     Kind = "vlan";
-      #     Name = "vlan2";
-      #   };
-      #   vlanConfig = {
-      #     Id = 2;
-      #   };
-      # };
+      # VLAN2 on top of the bond1
+      "vlan2" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = "vlan2";
+        };
+        vlanConfig = {
+          Id = 2;
+        };
+      };
 
-      # # VLAN3 on top of the bond1
-      # "vlan3" = {
-      #   netdevConfig = {
-      #     Kind = "vlan";
-      #     Name = "vlan3";
-      #   };
-      #   vlanConfig = {
-      #     Id = 3;
-      #   };
-      # };
+      # VLAN3 on top of the bond1
+      "vlan3" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = "vlan3";
+        };
+        vlanConfig = {
+          Id = 3;
+        };
+      };
 
-      # # VLAN4 on top of the bond1
-      # "vlan4" = {
-      #   netdevConfig = {
-      #     Kind = "vlan";
-      #     Name = "vlan4";
-      #   };
-      #   vlanConfig = {
-      #     Id = 4;
-      #   };
-      # };
+      # VLAN4 on top of the bond1
+      "vlan4" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = "vlan4";
+        };
+        vlanConfig = {
+          Id = 4;
+        };
+      };
 
       # VLAN5 on top of the bond1
       "vlan5" = {
@@ -135,31 +135,31 @@
         vlan = [ "vlan5" ];
       };
 
-      # # VLAN2 WAN interface configuration
-      # "vlan2" = {
-      #   matchConfig.Name = "vlan2";
-      #   networkConfig.DHCP = true;
-      #   networkConfig.LinkLocalAddressing = "no";
-      #   linkConfig.RequiredForOnline = "no";
-      # };
+      # VLAN2 WAN interface configuration
+      "vlan2" = {
+        matchConfig.Name = "vlan2";
+        networkConfig.DHCP = true;
+        networkConfig.LinkLocalAddressing = "no";
+        linkConfig.RequiredForOnline = "no";
+      };
 
-      # # VLAN 3 LAN interface configuration
-      # "vlan3" = {
-      #   matchConfig.Name = "vlan3";
-      #   networkConfig.DHCP = false;
-      #   networkConfig.LinkLocalAddressing = "no";
-      #   linkConfig.RequiredForOnline = "no";
-      # };
+      # VLAN 3 LAN interface configuration
+      "vlan3" = {
+        matchConfig.Name = "vlan3";
+        networkConfig.DHCP = false;
+        networkConfig.LinkLocalAddressing = "no";
+        linkConfig.RequiredForOnline = "no";
+      };
 
-      # # VLAN4 interface configuration (Heartbeat network)
-      # "vlan4" = {
-      #   matchConfig.Name = "vlan4";
-      #   networkConfig.DHCP = false;
-      #   networkConfig.LinkLocalAddressing = "no";
-      #   networkConfig.Gateway = "10.173.4.1";
-      #   linkConfig.RequiredForOnline = "no";
-      #   networkConfig.Address = [ "10.173.4.70/24" ];
-      # };
+      # VLAN4 interface configuration (Heartbeat network)
+      "vlan4" = {
+        matchConfig.Name = "vlan4";
+        networkConfig.DHCP = false;
+        networkConfig.LinkLocalAddressing = "no";
+        networkConfig.Gateway = "10.173.4.1";
+        linkConfig.RequiredForOnline = "no";
+        networkConfig.Address = [ "10.173.4.70/24" ];
+      };
 
       # VLAN5 interface configuration (Management network)
       "vlan5" = {
