@@ -188,6 +188,33 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
+  # Imperpance configuration
+  boot.initrd.postDeviceCommands = lib.mkAfter ''
+    mkdir -p /btrfs_tmp
+    mount / /btrfs_tmp 
+    if [[ -e /btrfs_tmp/@rootfs ]]; then
+      mkdir -p /btrfs_tmp/old_roots
+      timestamp=$(date "+%Y-%m-%d_%H-%M-%S")  # Correctly handled as a bash variable
+      btrfs subvolume snapshot /btrfs_tmp/@rootfs "/btrfs_tmp/old_roots/@rootfs-$$timestamp"
+    fi
+
+    delete_subvolume_recursively() {
+        local subvol="$$1"
+        IFS=$'\n'
+        for i in $(btrfs subvolume list -o "$subvol" | awk '{print $NF}'); do
+            delete_subvolume_recursively "$subvol/$i"
+        done
+        btrfs subvolume delete "$subvol"
+    }
+
+    for i in $(find /btrfs_tmp/old_roots/ -maxdepth 1 -mtime +30 -type d); do
+        delete_subvolume_recursively "$i"
+    done
+
+    btrfs subvolume create /btrfs_tmp/@rootfs  # Creates a new root subvolume for the upcoming boot
+    umount /btrfs_tmp
+  '';
+
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
