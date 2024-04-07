@@ -50,7 +50,7 @@
     - name: Run the first install command
       ansible.builtin.shell:
         cmd: >
-          sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }}
+          sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }} --no-root-passwd 
       args:
         executable: /run/current-system/sw/bin/bash
 
@@ -122,13 +122,13 @@
         msg: "SSH keys do not match!"
       when: inventory_ssh_key not in remote_ssh_key_string
 
-    # Run install command again but with the new host keys to decrypt the secrets
-    # Set root password for testing so I can troubleshoot network issues
-    - name: Stop to run command manually
-      ansible.builtin.pause:
-        prompt: "Stop to run command manually"
-      delegate_to: localhost
-
+    - name: Run the first install command
+      ansible.builtin.shell:
+        cmd: >
+          sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }} --no-root-passwd 
+      args:
+        executable: /run/current-system/sw/bin/bash
+        
     - name: Copy git repo to new install root user
       ansible.builtin.shell:
         cmd: >
