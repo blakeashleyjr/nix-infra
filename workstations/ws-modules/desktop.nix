@@ -79,6 +79,7 @@
     nheko
     teams-for-linux
     webex
+    beeper
 
     # Media Applications
     gimp
@@ -89,7 +90,6 @@
     zathura
     feh
     libsForQt5.okular
-
     yt-dlp
 
     # Terminal Utilities
@@ -107,7 +107,6 @@
     fira-code
 
     # System Tools
-
     kalker
     iamb
     cinnamon.nemo
