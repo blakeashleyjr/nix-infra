@@ -47,12 +47,16 @@
         executable: /run/current-system/sw/bin/bash
 
     # Run install command first that downloads the paths but regenerates the host keys
+    # - name: Run the first install command
+    #   ansible.builtin.shell:
+    #     cmd: >
+    #       sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }} --no-root-passwd 
+    #   args:
+    #     executable: /run/current-system/sw/bin/bash
     - name: Run the first install command
-      ansible.builtin.shell:
-        cmd: >
-          sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }} --no-root-passwd 
-      args:
-        executable: /run/current-system/sw/bin/bash
+      ansible.builtin.pause:
+        prompt: "Run the first install command and press enter when done"
+      delegate_to: localhost
 
     - name: Copy ssh hostkey to new install
       ansible.builtin.shell:
@@ -121,12 +125,17 @@
         msg: "SSH keys do not match!"
       when: inventory_ssh_key not in remote_ssh_key_string
 
-    - name: Run the first install command
-      ansible.builtin.shell:
-        cmd: >
-          sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }} --no-root-passwd 
-      args:
-        executable: /run/current-system/sw/bin/bash
+    - name: Run the second install command
+      ansible.builtin.pause:
+        prompt: "Run the second install command and press enter when done"
+      delegate_to: localhost
+
+    # - name: Run the second install command
+    #   ansible.builtin.shell:
+    #     cmd: >
+    #       sudo nixos-install --flake ./nix-infra#{{ inventory_hostname }} --no-root-passwd 
+    #   args:
+    #     executable: /run/current-system/sw/bin/bash
 
     - name: Copy git repo to new install root user
       ansible.builtin.shell:

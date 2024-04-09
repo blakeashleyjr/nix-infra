@@ -97,7 +97,6 @@ with lib;
 
   ## Additional Security Measures
   boot.kernelPackages = mkDefault pkgs.linuxPackages_hardened; # Use hardened kernel for enhanced security.
-  environment.variables.SCUDO_OPTIONS = mkDefault "ZeroContents=1"; # Ensure memory is zeroed out on free.
 
   security.allowSimultaneousMultithreading = false; # Disable SMT to protect against side-channel attacks.
   security.unprivilegedUsernsClone = mkDefault config.virtualisation.containers.enable; # Allow unprivileged user namespaces if containers are enabled.
