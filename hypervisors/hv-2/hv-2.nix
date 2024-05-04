@@ -185,7 +185,7 @@
 
       "30-br-wan" = {
         matchConfig.Name = "br-wan";
-        networkConfig.DHCP = true;
+        networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "no";
       };
