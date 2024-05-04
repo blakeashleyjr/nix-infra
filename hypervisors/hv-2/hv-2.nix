@@ -22,30 +22,9 @@
   systemd.network = {
     enable = true;
 
-    # # Rename our links with standard names
-    # links - {
-    #   # Management/fallback connection, 1Gbps
-    #   "10-phys0" = {
-    #     matchConfig.PermanentMACAddress = "00:0d:b9:1b:1b:00";
-    #     linkConfig.Name = "phys0";
-    #   }
-    #   # Bonded connection, 10Gbps
-    #   "20-phys1" = {
-    #     matchConfig.PermanentMACAddress = "00:0d:b9:1b:1b:01";
-    #     linkConfig.Name = "phys1";
-    #   }
-    #   # Bonded connection, 10Gbps
-    #   "20-phys2" = {
-    #     matchConfig.PermanentMACAddress = "00:0d:b9:1b:1b:02";
-    #     linkConfig.Name = "phys2";
-    #   }
-    # }
-
-    # Define network devices including bond interfaces and VLANs
     netdevs = {
 
-      ## Bonds
-      # LACP bond configuration between phys1 and phys2
+      ## LACP bond (primary)
       "bond0" = {
         netdevConfig = {
           Kind = "bond";
@@ -61,7 +40,7 @@
         };
       };
 
-      # Active-backup bond configuration including bond0 and phys0
+      ## Active-backup bond (fallback)
       "bond1" = {
         netdevConfig = {
           Kind = "bond";
@@ -70,12 +49,12 @@
         bondConfig = {
           Mode = "active-backup";
           MIIMonitorSec = 100;
+          # Primary = "bond0";
           PrimaryReselectPolicy = "always";
         };
       };
 
-      ## VLAN devices
-      # vlan-wan (2) on top of the bond1
+      ## VLAN devices (on top of bond1)
       "10-vlan-wan" = {
         netdevConfig = {
           Kind = "vlan";
@@ -86,7 +65,6 @@
         };
       };
 
-      # vlan-lan (3) on top of the bond1
       "10-vlan-lan" = {
         netdevConfig = {
           Kind = "vlan";
@@ -97,7 +75,6 @@
         };
       };
 
-      # heartbeat (4) on top of the bond1
       "10-vlan-heartbeat" = {
         netdevConfig = {
           Kind = "vlan";
@@ -108,7 +85,6 @@
         };
       };
 
-      # hypervisor (5) on top of the bond1
       "10-vlan-hypervisor" = {
         netdevConfig = {
           Kind = "vlan";
@@ -120,7 +96,6 @@
       };
 
       ## Bridges for each VLAN
-      # Bridge for vlan-wan
       "10-br-wan" = {
         netdevConfig = {
           Kind = "bridge";
@@ -128,7 +103,6 @@
         };
       };
 
-      # Bridge for vlan-lan
       "10-br-lan" = {
         netdevConfig = {
           Kind = "bridge";
@@ -136,7 +110,6 @@
         };
       };
 
-      # Bridge for vlan-heartbeat
       "10-br-heartbeat" = {
         netdevConfig = {
           Kind = "bridge";
@@ -144,7 +117,6 @@
         };
       };
 
-      # Bridge for vlan-hypervisor
       "10-br-hypervisor" = {
         netdevConfig = {
           Kind = "bridge";
@@ -154,13 +126,11 @@
     };
 
     networks = {
-      # Assign VLANs to bond1
       "20-vlan-to-bond1" = {
         matchConfig.Name = "bond1";
         networkConfig.VLAN = [ "vlan-wan" "vlan-lan" "vlan-heartbeat" "vlan-hypervisor" ];
       };
 
-      # Assign VLAN devices to their respective bridges
       "20-vlan-br-wan" = {
         matchConfig.Name = "vlan-wan";
         networkConfig.Bridge = "br-wan";
@@ -180,8 +150,6 @@
         matchConfig.Name = "vlan-hypervisor";
         networkConfig.Bridge = "br-hypervisor";
       };
-
-      # Configure bridges for host network access
 
       "30-br-wan" = {
         matchConfig.Name = "br-wan";
@@ -237,24 +205,20 @@
         linkConfig.RequiredForOnline = "enslaved";
       };
 
-      # Configuration for bond0 as part of bond1
-      "bond0" = {
-        matchConfig.Name = "bond0";
-        networkConfig.Bond = "bond1";
-        networkConfig.DHCP = false;
-        linkConfig.RequiredForOnline = "enslaved";
-      };
-
-      # Bond1 interface configuration
       "bond1" = {
         matchConfig.Name = "bond1";
         networkConfig.DHCP = false;
-        networkConfig.LinkLocalAddressing = "no";
+        networkConfig = {
+          LinkLocalAddressing = "no";
+          PrimarySlave = "yes";
+          Bond = "bond1";
+        };
         linkConfig.RequiredForOnline = "no";
       };
 
     };
   };
+
 
   # Hardware configuration
   boot.initrd.availableKernelModules = [
