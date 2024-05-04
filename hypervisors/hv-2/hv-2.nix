@@ -199,10 +199,8 @@
         networkConfig.DHCP = false;
         networkConfig = {
           LinkLocalAddressing = "no";
-          # PrimarySlave = "yes";
         };
-        linkConfig.RequiredForOnline = "no";
-        # networkConfig.Metric = 100;
+        linkConfig.RequiredForOnline = "carrier";
       };
     };
   };
