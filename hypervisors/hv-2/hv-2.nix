@@ -251,6 +251,7 @@
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "carrier";
+        networkConfig.Bridge = "vlan-to-bond1";
       };
 
     };
