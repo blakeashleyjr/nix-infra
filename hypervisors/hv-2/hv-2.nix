@@ -197,14 +197,14 @@
         linkConfig.RequiredForOnline = "no";
       };
 
-      "30-br-heartbeat" = {
-        matchConfig.Name = "br-heartbeat";
-        networkConfig.DHCP = false;
-        networkConfig.LinkLocalAddressing = "no";
-        networkConfig.Gateway = "10.173.4.1";
-        linkConfig.RequiredForOnline = "no";
-        networkConfig.Address = [ "10.173.4.70/24" ];
-      };
+      # "30-br-heartbeat" = {
+      #   matchConfig.Name = "br-heartbeat";
+      #   networkConfig.DHCP = false;
+      #   networkConfig.LinkLocalAddressing = "no";
+      #   networkConfig.Gateway = "10.173.4.1";
+      #   linkConfig.RequiredForOnline = "no";
+      #   networkConfig.Address = [ "10.173.4.70/24" ];
+      # };
 
       "30-br-hypervisor" = {
         matchConfig.Name = "br-hypervisor";
