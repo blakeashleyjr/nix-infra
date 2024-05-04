@@ -251,7 +251,6 @@
         networkConfig.DHCP = false;
         networkConfig.LinkLocalAddressing = "no";
         linkConfig.RequiredForOnline = "carrier";
-        vlan = [ "vlan5" ];
       };
 
     };
