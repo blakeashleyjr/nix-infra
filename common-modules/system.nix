@@ -32,11 +32,11 @@
     zellij # A newer terminal multiplexer aiming to be user-friendly and customizable
 
     # Network tools
-    # curl # Tool to transfer data from or to a server
-    # iperf3 # Network bandwidth measurement tool
-    # nmap # Network exploration tool and security / port scanner
-    # traceroute # Tracks the route packets take to a network host
-    # wget # Utility for non-interactive download of files from the web
+    curl # Tool to transfer data from or to a server
+    iperf3 # Network bandwidth measurement tool
+    nmap # Network exploration tool and security / port scanner
+    traceroute # Tracks the route packets take to a network host
+    wget # Utility for non-interactive download of files from the web
 
     # Programming languages and runtime
     # go # The Go programming language
@@ -52,7 +52,7 @@
     # Disk and file management
     # gparted # Disk partitioning tool
     # rclone # Command-line program to manage files on cloud storage
-    # rsync # Fast incremental file transfer
+    rsync # Fast incremental file transfer
 
     # Containers and virtualization
     docker # Platform for developing, shipping, and running applications in containers
