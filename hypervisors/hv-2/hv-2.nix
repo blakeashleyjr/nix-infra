@@ -23,7 +23,6 @@
     enable = true;
 
     netdevs = {
-
       ## LACP bond (primary)
       "bond0" = {
         netdevConfig = {
@@ -40,21 +39,7 @@
         };
       };
 
-      ## Active-backup bond (fallback)
-      "bond1" = {
-        netdevConfig = {
-          Kind = "bond";
-          Name = "bond1";
-        };
-        bondConfig = {
-          Mode = "active-backup";
-          MIIMonitorSec = 100;
-          # Primary = "bond0";
-          PrimaryReselectPolicy = "always";
-        };
-      };
-
-      ## VLAN devices (on top of bond1)
+      ## VLAN devices (on top of bond0)
       "10-vlan-wan" = {
         netdevConfig = {
           Kind = "vlan";
@@ -126,9 +111,10 @@
     };
 
     networks = {
-      "20-vlan-to-bond1" = {
-        matchConfig.Name = "bond1";
+      "20-vlan-to-bond0" = {
+        matchConfig.Name = "bond0";
         networkConfig.VLAN = [ "vlan-wan" "vlan-lan" "vlan-heartbeat" "vlan-hypervisor" ];
+        # networkConfig.Metric = 100;
       };
 
       "20-vlan-br-wan" = {
@@ -198,32 +184,26 @@
         linkConfig.RequiredForOnline = "enslaved";
       };
 
-      "enp37s0" = {
-        matchConfig.Name = "enp37s0";
-        networkConfig.Bond = "bond1";
-        networkConfig.DHCP = false;
-        linkConfig.RequiredForOnline = "enslaved";
-      };
+      # "enp37s0" = {
+      #   matchConfig.Name = "enp37s0";
+      #   networkConfig.DHCP = false;
+      #   networkConfig.Address = [ "10.173.6.70/24" ]; # Replace with actual IP
+      #   networkConfig.Gateway = "10.173.6.1"; # Replace with actual gateway
+      #   networkConfig.DNS = [ "127.0.0.1:53" ];
+      #   linkConfig.RequiredForOnline = "yes";
+      #   networkConfig.Metric = 200;
+      # };
 
       bond0 = {
         matchConfig.Name = "bond0";
         networkConfig.DHCP = false;
         networkConfig = {
           LinkLocalAddressing = "no";
-          PrimarySlave = "yes";
+          # PrimarySlave = "yes";
         };
         linkConfig.RequiredForOnline = "no";
+        # networkConfig.Metric = 100;
       };
-
-      "bond1" = {
-        matchConfig.Name = "bond1";
-        networkConfig.DHCP = false;
-        networkConfig = {
-          LinkLocalAddressing = "no";
-        };
-        linkConfig.RequiredForOnline = "no";
-      };
-
     };
   };
 
