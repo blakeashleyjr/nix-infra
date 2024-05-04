@@ -205,13 +205,21 @@
         linkConfig.RequiredForOnline = "enslaved";
       };
 
+      bond0 = {
+        matchConfig.Name = "bond0";
+        networkConfig.DHCP = false;
+        networkConfig = {
+          LinkLocalAddressing = "no";
+          PrimarySlave = "yes";
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
+
       "bond1" = {
         matchConfig.Name = "bond1";
         networkConfig.DHCP = false;
         networkConfig = {
           LinkLocalAddressing = "no";
-          PrimarySlave = "yes";
-          Bond = "bond1";
         };
         linkConfig.RequiredForOnline = "no";
       };
