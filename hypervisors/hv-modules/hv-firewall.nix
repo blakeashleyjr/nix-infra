@@ -174,6 +174,9 @@ in
 
     users.groups.keepalived_script = { };
 
+    age.secrets."wan-gateway".file = ../../secrets/wan-gateway.age;
+    age.secrets."public-ip-1".file = ../../secrets/public-ip-1.age;
+
     services.keepalived = {
       enable = true;
       vrrpScripts = {
@@ -195,7 +198,7 @@ in
           virtualRouterId = 51;
           priority = config.hv-Firewall.vrrpPriority.WAN_VIP;
           virtualIps = [
-            { addr = publicIp1Path; dev = "br-wan"; }
+            { addr = config.age.secrets."public-ip-1".path; dev = "br-wan"; }
           ];
           trackScripts = [ "add_default_gw" "del_default_gw" ];
         };
@@ -210,6 +213,7 @@ in
         };
       };
     };
+
 
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
