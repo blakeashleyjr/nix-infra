@@ -115,6 +115,9 @@
         matchConfig.Name = "bond0";
         networkConfig.VLAN = [ "vlan-wan" "vlan-lan" "vlan-heartbeat" "vlan-hypervisor" ];
         linkConfig.RequiredForOnline = "carrier";
+        networkConfig = {
+          LinkLocalAddressing = "no";
+        };
       };
 
       "20-vlan-br-wan" = {
