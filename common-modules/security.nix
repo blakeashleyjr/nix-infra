@@ -22,6 +22,8 @@ with lib;
     };
   };
 
+  services.logrotate.checkConfig = false; # Disable logrotate configuration checks to prevent log rotation issues and build errors.
+
   ## Sysctl Settings for Additional Kernel Hardening
   boot.kernel.sysctl = {
     # General protection settings.
