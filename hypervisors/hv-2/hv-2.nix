@@ -130,6 +130,7 @@
       "20-vlan-br-heartbeat" = {
         matchConfig.Name = "vlan-heartbeat";
         networkConfig.Bridge = "br-heartbeat";
+        linkConfig.RequiredForOnline = "no";
       };
 
       "20-vlan-br-hypervisor" = {
