@@ -200,7 +200,7 @@
         networkConfig = {
           LinkLocalAddressing = "no";
         };
-        linkConfig.RequiredForOnline = "carrier";
+        linkConfig.RequiredForOnline = "enslaved";
       };
     };
   };
