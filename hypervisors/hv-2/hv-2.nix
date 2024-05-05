@@ -114,7 +114,7 @@
       "20-vlan-to-bond0" = {
         matchConfig.Name = "bond0";
         networkConfig.VLAN = [ "vlan-wan" "vlan-lan" "vlan-heartbeat" "vlan-hypervisor" ];
-        # networkConfig.Metric = 100;
+        linkConfig.RequiredForOnline = "no";
       };
 
       "20-vlan-br-wan" = {
