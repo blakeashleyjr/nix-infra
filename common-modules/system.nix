@@ -6,8 +6,8 @@
   # Define all secrets
   age.secrets = {
     "tailscale-authkey".file = ../secrets/tailscale-authkey.age;
-    # "wan-gateway".file = ../secrets/wan-gateway.age; # defined in the network configuration
-    # "public-ip-1".file = ../secrets/public-ip-1.age; # defined in the network configuration
+    "wan-gateway".file = ../secrets/wan-gateway.age; # defined in the network configuration
+    "public-ip-1".file = ../secrets/public-ip-1.age; # defined in the network configuration
     # Add additional secrets as necessary
   };
 
