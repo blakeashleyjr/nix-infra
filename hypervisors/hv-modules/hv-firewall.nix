@@ -177,36 +177,36 @@ in
       ];
     };
 
-    services.keepalived.enable = true;
-
-    services.keepalived.vrrpScripts = {
-      add_default_gw = {
-        script = "${pkgs.coreutils}/bin/sh ${addGatewayScriptPath}";
-        interval = 1;
-        weight = 10;
+    services.keepalived = {
+      enable = true;
+      vrrpScripts = {
+        add_default_gw = {
+          script = "${pkgs.coreutils}/bin/sh ${addGatewayScriptPath}";
+          interval = 1;
+          weight = 10;
+        };
+        del_default_gw = {
+          script = "${pkgs.coreutils}/bin/sh ${delGatewayScriptPath}";
+          interval = 1;
+          weight = -10;
+        };
       };
-      del_default_gw = {
-        script = "${pkgs.coreutils}/bin/sh ${delGatewayScriptPath}";
-        interval = 1;
-        weight = -10;
-      };
-    };
-
-    services.keepalived.vrrpInstances = {
-      WAN_VIP = {
-        interface = config.hv-Firewall.vrrpInterface;
-        state = "BACKUP";
-        virtualRouterId = 51;
-        priority = config.hv-Firewall.vrrpPriority.WAN_VIP;
-        virtualIps = builtins.map (ip: { addr = ip.ip; dev = ip.dev; }) config.hv-Firewall.vrrpIps;
-        trackScripts = [ "add_default_gw" "del_default_gw" ];
-      };
-      LAN_VIP = {
-        interface = config.hv-Firewall.vrrpInterface;
-        state = "BACKUP";
-        virtualRouterId = 52;
-        priority = config.hv-Firewall.vrrpPriority.LAN_VIP;
-        virtualIps = builtins.map (ip: { addr = ip.ip; dev = ip.dev; }) (lib.filter (ip: ip.dev == config.hv-Firewall.lanInterface) config.hv-Firewall.vrrpIps);
+      vrrpInstances = {
+        WAN_VIP = {
+          interface = config.hv-Firewall.vrrpInterface;
+          state = "BACKUP";
+          virtualRouterId = 51;
+          priority = config.hv-Firewall.vrrpPriority.WAN_VIP;
+          virtualIps = builtins.map (ip: { addr = ip.ip; dev = ip.dev; }) config.hv-Firewall.vrrpIps;
+          trackScripts = [ "add_default_gw" "del_default_gw" ];
+        };
+        LAN_VIP = {
+          interface = config.hv-Firewall.vrrpInterface;
+          state = "BACKUP";
+          virtualRouterId = 52;
+          priority = config.hv-Firewall.vrrpPriority.LAN_VIP;
+          virtualIps = builtins.map (ip: { addr = ip.ip; dev = ip.dev; }) (lib.filter (ip: ip.dev == config.hv-Firewall.lanInterface) config.hv-Firewall.vrrpIps);
+        };
       };
     };
 
