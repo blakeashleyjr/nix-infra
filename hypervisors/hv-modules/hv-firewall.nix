@@ -20,13 +20,18 @@ in
   options.hv-Firewall = {
     wanInterface = lib.mkOption {
       type = lib.types.str;
-      default = "vlan2";
+      default = "br-wan";
       description = "WAN interface for the firewall.";
     };
     lanInterface = lib.mkOption {
       type = lib.types.str;
-      default = "vlan3";
+      default = "br-lan";
       description = "LAN interface for the firewall.";
+    };
+    heartbeatInterface = lib.mkOption {
+      type = lib.types.str;
+      default = "br-heartbeat";
+      description = "Heartbeat interface for the firewall.";
     };
     wanGatewayPath = lib.mkOption {
       type = lib.types.path;
@@ -47,11 +52,6 @@ in
       type = lib.types.listOf lib.types.str;
       default = [ "10.0.0.0/8" ];
       description = "Networks for source NAT.";
-    };
-    vrrpInterface = lib.mkOption {
-      type = lib.types.str;
-      default = "vlan4";
-      description = "VRRP interface.";
     };
     vrrpIps = lib.mkOption {
       type = lib.types.listOf (lib.types.submodule {
@@ -193,7 +193,7 @@ in
       };
       vrrpInstances = {
         WAN_VIP = {
-          interface = config.hv-Firewall.vrrpInterface;
+          interface = config.hv-Firewall.heartbeatInterface;
           state = "BACKUP";
           virtualRouterId = 51;
           priority = config.hv-Firewall.vrrpPriority.WAN_VIP;
@@ -201,7 +201,7 @@ in
           trackScripts = [ "add_default_gw" "del_default_gw" ];
         };
         LAN_VIP = {
-          interface = config.hv-Firewall.vrrpInterface;
+          interface = config.hv-Firewall.heartbeatInterface;
           state = "BACKUP";
           virtualRouterId = 52;
           priority = config.hv-Firewall.vrrpPriority.LAN_VIP;
