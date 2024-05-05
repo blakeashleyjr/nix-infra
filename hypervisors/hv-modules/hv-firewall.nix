@@ -138,7 +138,7 @@ in
         bootstrap_resolvers = [ "9.9.9.11:53" "1.1.1.1:53" ];
         log_files_max_size = 10;
         log_files_max_age = 7;
-        log_files_max_backlogs = 1;
+        log_files_max_backups = 1;
         cache = true;
         cache_size = 4096;
         cache_min_ttl = 2400;
