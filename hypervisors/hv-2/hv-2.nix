@@ -155,25 +155,25 @@
         linkConfig.RequiredForOnline = "no";
       };
 
-      "30-br-heartbeat" = {
-        matchConfig.Name = "br-heartbeat";
-        networkConfig.DHCP = false;
-        networkConfig.LinkLocalAddressing = "no";
-        networkConfig.Gateway = "10.173.4.1";
-        linkConfig.RequiredForOnline = "no";
-        networkConfig.Address = [ "10.173.4.70/24" ];
-        networkConfig.DNS = [ "127.0.0.1:53" ];
-      };
-
-      # "30-br-hypervisor" = {
-      #   matchConfig.Name = "br-hypervisor";
+      # "30-br-heartbeat" = {
+      #   matchConfig.Name = "br-heartbeat";
       #   networkConfig.DHCP = false;
       #   networkConfig.LinkLocalAddressing = "no";
-      #   networkConfig.Address = [ "10.173.5.70/24" ];
-      #   networkConfig.Gateway = "10.173.5.1";
+      #   networkConfig.Gateway = "10.173.4.1";
+      #   linkConfig.RequiredForOnline = "no";
+      #   networkConfig.Address = [ "10.173.4.70/24" ];
       #   networkConfig.DNS = [ "127.0.0.1:53" ];
-      #   linkConfig.RequiredForOnline = "yes";
       # };
+
+      "30-br-hypervisor" = {
+        matchConfig.Name = "br-hypervisor";
+        networkConfig.DHCP = false;
+        networkConfig.LinkLocalAddressing = "no";
+        networkConfig.Address = [ "10.173.5.70/24" ];
+        networkConfig.Gateway = "10.173.5.1";
+        networkConfig.DNS = [ "127.0.0.1:53" ];
+        linkConfig.RequiredForOnline = "yes";
+      };
 
       "enp16s0f0" = {
         matchConfig.Name = "enp16s0f0";

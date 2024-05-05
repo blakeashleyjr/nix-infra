@@ -5,14 +5,17 @@ let
   wanGatewayPath = config.age.secrets."wan-gateway".path;
   publicIp1Path = config.age.secrets."public-ip-1".path;
 
-  scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
+  # Paths for the custom gateway scripts
+  addGatewayScript = pkgs.writeScript "add-gateway.sh" ''
     #!/bin/sh
-    WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-    ip route ${command} default via $WAN_GATEWAY_IP
+    IP=$(cat ${wanGatewayPath})
+    ip route add default via $IP
   '';
-
-  addGatewayScriptPath = "/run/agenix/add-gateway.sh";
-  delGatewayScriptPath = "/run/agenix/del-gateway.sh";
+  delGatewayScript = pkgs.writeScript "del-gateway.sh" ''
+    #!/bin/sh
+    IP=$(cat ${wanGatewayPath})
+    ip route del default via $IP
+  '';
 in
 {
   options.hv-Firewall = {
@@ -55,8 +58,8 @@ in
       type = lib.types.listOf (lib.types.submodule {
         options = {
           ip = lib.mkOption {
-            type = lib.types.str;
-            description = "IP address.";
+            type = lib.types.path;
+            description = "Path to the IP address.";
           };
           dev = lib.mkOption {
             type = lib.types.str;
@@ -65,8 +68,8 @@ in
         };
       });
       default = [
-        { ip = publicIp1Path; dev = "vlan2"; } # WAN VIP
-        { ip = "10.173.3.3/24"; dev = "vlan3"; } # LAN VIP
+        { ip = publicIp1Path; dev = "br-wan"; } # WAN VIP
+        { ip = "10.173.3.3/24"; dev = "br-lan"; } # LAN VIP
       ];
       description = "VRRP IPs configuration.";
     };
@@ -76,8 +79,6 @@ in
       description = "VRRP priority settings.";
     };
   };
-
-
 
   config = {
     networking.nftables.enable = true;
@@ -117,7 +118,7 @@ in
         content = lib.concatMapStringsSep "\n"
           (network: ''
             chain postrouting {
-              type nat hook postrouting priority srcnat; 
+              type nat hook postrouting priority srcnat;
               ip saddr ${network} oifname "${config.hv-Firewall.wanInterface}" masquerade;
             }
           '')
@@ -177,12 +178,12 @@ in
       enable = true;
       vrrpScripts = {
         add_default_gw = {
-          script = "${pkgs.coreutils}/bin/sh ${addGatewayScriptPath}";
+          script = "${addGatewayScript}";
           interval = 1;
           weight = 10;
         };
         del_default_gw = {
-          script = "${pkgs.coreutils}/bin/sh ${delGatewayScriptPath}";
+          script = "${delGatewayScript}";
           interval = 1;
           weight = -10;
         };
@@ -193,7 +194,9 @@ in
           state = "BACKUP";
           virtualRouterId = 51;
           priority = config.hv-Firewall.vrrpPriority.WAN_VIP;
-          virtualIps = builtins.map (ip: { addr = ip.ip; dev = ip.dev; }) config.hv-Firewall.vrrpIps;
+          virtualIps = [
+            { addr = publicIp1Path; dev = "br-wan"; }
+          ];
           trackScripts = [ "add_default_gw" "del_default_gw" ];
         };
         LAN_VIP = {
@@ -201,7 +204,9 @@ in
           state = "BACKUP";
           virtualRouterId = 52;
           priority = config.hv-Firewall.vrrpPriority.LAN_VIP;
-          virtualIps = builtins.map (ip: { addr = ip.ip; dev = ip.dev; }) (lib.filter (ip: ip.dev == config.hv-Firewall.lanInterface) config.hv-Firewall.vrrpIps);
+          virtualIps = [
+            { addr = "10.173.3.3/24"; dev = "br-lan"; }
+          ];
         };
       };
     };
@@ -225,16 +230,8 @@ in
       }
     ];
 
-    environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
-      #!/bin/sh
-      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-      ip route add default via $WANGGWAY_IP
-    '';
-    environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
-      #!/bin/sh
-      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-      ip route del default via $WAN_GATEWAY_IP
-    '';
+    environment.etc."agenix/add-gateway.sh".source = addGatewayScript;
+    environment.etc."agenix/del-gateway.sh".source = delGatewayScript;
   };
 }
 
