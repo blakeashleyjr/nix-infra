@@ -6,8 +6,8 @@ let
   publicIp1Path = config.age.secrets."public-ip-1".path;
 
   secretEnvFile = pkgs.writeText "keepalived.env" ''
-    WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-    PUBLIC_IP_1=$(cat ${publicIp1Path})
+    WAN_GATEWAY_IP=$(cat "${wanGatewayPath}")
+    PUBLIC_IP_1=$(cat "${publicIp1Path}")
   '';
 
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
@@ -70,8 +70,8 @@ in
         };
       });
       default = [
-        { ip = "$PUBLIC_IP_1"; dev = "vlan2"; } # WAN VIP
-        { ip = "10.173.3.3/24"; dev = "vlan3"; } # LAN VIP
+        { ip = "$PUBLIC_IP_1"; dev = "br-wan"; } # WAN VIP
+        { ip = "10.173.3.3/24"; dev = "br-lanF"; } # LAN VIP
       ];
       description = "VRRP IPs configuration.";
     };
