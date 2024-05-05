@@ -5,10 +5,15 @@ let
   wanGatewayPath = config.age.secrets."wan-gateway".path;
   publicIp1Path = config.age.secrets."public-ip-1".path;
 
+  secretEnvFile = pkgs.writeText "keepalived.env" ''
+    WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+    PUBLIC_IP_1=$(cat ${publicIp1Path})
+  '';
+
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
     #!/bin/sh
-    WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-    ip route ${command} default via $WAN_GATEWAY_IP
+    IP=$WAN_GATEWAY_IP
+    ip route ${command} default via $IP
   '';
 
   addGatewayScriptPath = "/run/agenix/add-gateway.sh";
@@ -65,7 +70,7 @@ in
         };
       });
       default = [
-        { ip = publicIp1Path; dev = "vlan2"; } # WAN VIP
+        { ip = "$PUBLIC_IP_1"; dev = "vlan2"; } # WAN VIP
         { ip = "10.173.3.3/24"; dev = "vlan3"; } # LAN VIP
       ];
       description = "VRRP IPs configuration.";
@@ -76,8 +81,6 @@ in
       description = "VRRP priority settings.";
     };
   };
-
-
 
   config = {
     networking.nftables.enable = true;
@@ -117,7 +120,7 @@ in
         content = lib.concatMapStringsSep "\n"
           (network: ''
             chain postrouting {
-              type nat hook postrouting priority srcnat; 
+              type nat hook postrouting priority srcnat;
               ip saddr ${network} oifname "${config.hv-Firewall.wanInterface}" masquerade;
             }
           '')
@@ -135,7 +138,7 @@ in
         bootstrap_resolvers = [ "9.9.9.11:53" "1.1.1.1:53" ];
         log_files_max_size = 10;
         log_files_max_age = 7;
-        log_files_max_backups = 1;
+        log_files_max_backlogs = 1;
         cache = true;
         cache_size = 4096;
         cache_min_ttl = 2400;
@@ -175,6 +178,7 @@ in
 
     services.keepalived = {
       enable = true;
+      secretFile = secretEnvFile;
       vrrpScripts = {
         add_default_gw = {
           script = "${pkgs.coreutils}/bin/sh ${addGatewayScriptPath}";
@@ -217,24 +221,23 @@ in
     assertions = [
       {
         assertion = config.hv-Firewall.vrrpPriority.WAN_VIP != 0;
-        message = "vrrpPriority.WAN_VIP must be set to a non-zero value.";
+        message = "vrrpPriority.WAN VIP must be set to a non zero value.";
       }
       {
         assertion = config.hv-Firewall.vrrpPriority.LAN_VIP != 0;
-        message = "vrrpPriority.LAN_VIP must be set to a non-zero value.";
+        message = "vrrpPriority LAN VIP must be set to a non zero value.";
       }
     ];
 
     environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
       #!/bin/sh
-      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-      ip route add default via $WANGGWAY_IP
+      WAN_GATEWAY IP = $(cat ${wanGatewayPath})
+      ip route add default via $WAN_GATEWAY IP
     '';
     environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
       #!/bin/sh
-      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+      WAN_GATEWAY IP = $(cat ${wanGatewayPath})
       ip route del default via $WAN_GATEWAY_IP
     '';
   };
 }
-
