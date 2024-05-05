@@ -2,21 +2,19 @@
 
 let
   cfg = config.services.keepalived;
-  wanGatewayPath = config.hv-Firewall.wanGatewayPath;
+  wanGatewayPath = config.age.secrets."wan-gateway".path;
+  publicIp1Path = config.age.secrets."public-ip-1".path;
 
-  # Scripts to dynamically adjust the default gateway using the secret
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
     #!/bin/sh
     WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
     ip route ${command} default via $WAN_GATEWAY_IP
   '';
 
-  # Generate the full path to the scripts as strings
   addGatewayScriptPath = "/run/agenix/add-gateway.sh";
   delGatewayScriptPath = "/run/agenix/del-gateway.sh";
 in
 {
-  # Define custom options for this module
   options.hv-Firewall = {
     wanInterface = lib.mkOption {
       type = lib.types.str;
@@ -35,12 +33,12 @@ in
     };
     wanGatewayPath = lib.mkOption {
       type = lib.types.path;
-      default = config.age.secrets."wan-gateway".path;
+      default = wanGatewayPath;
       description = "Path to the WAN gateway secret.";
     };
     public-ip-1Path = lib.mkOption {
       type = lib.types.path;
-      default = config.age.secrets."public-ip-1".path;
+      default = publicIp1Path;
       description = "Path to the public IP 1 secret.";
     };
     dnsForwardingAddresses = lib.mkOption {
@@ -67,7 +65,7 @@ in
         };
       });
       default = [
-        { ip = config.age.secrets."public-ip-1".path; dev = "vlan2"; } # WAN VIP
+        { ip = publicIp1Path; dev = "vlan2"; } # WAN VIP
         { ip = "10.173.3.3/24"; dev = "vlan3"; } # LAN VIP
       ];
       description = "VRRP IPs configuration.";
@@ -79,7 +77,8 @@ in
     };
   };
 
-  # Use the options
+
+
   config = {
     networking.nftables.enable = true;
     networking.nftables.tables = {
@@ -110,7 +109,6 @@ in
             policy accept;
           }
         '';
-
       };
       nat = {
         name = "nat";
@@ -135,23 +133,14 @@ in
         ipv6_servers = true;
         require_dnssec = true;
         bootstrap_resolvers = [ "9.9.9.11:53" "1.1.1.1:53" ];
-        # Maximum log files size in MB - Set to 0 for unlimited.
         log_files_max_size = 10;
-        # How long to keep backup files, in days
         log_files_max_age = 7;
-        # Maximum log files backups to keep (or 0 to keep all backups)
         log_files_max_backups = 1;
-        ## Enable a DNS cache to reduce latency and outgoing traffic
         cache = true;
-        ## Cache size
         cache_size = 4096;
-        ## Minimum TTL for cached entries
         cache_min_ttl = 2400;
-        ## Maximum TTL for cached entries
         cache_max_ttl = 86400;
-        ## Minimum TTL for negatively cached entries
         cache_neg_min_ttl = 60;
-        ## Maximum TTL for negatively cached entries
         cache_neg_max_ttl = 600;
         static = {
           "NextDNS-f33fea" = {
@@ -165,7 +154,6 @@ in
       StateDirectory = "dnscrypt-proxy";
     };
 
-    # Mount a tmpfs for the dnscrypt-proxy cache
     fileSystems."/run/dnscrypt-proxy" = {
       fsType = "tmpfs";
       device = "tmpfs";
@@ -176,6 +164,14 @@ in
         "size=50M"
       ];
     };
+
+    users.users.keepalived_script = {
+      isSystemUser = true;
+      description = "User for Keepalived scripts";
+      group = "keepalived_script";
+    };
+
+    users.groups.keepalived_script = { };
 
     services.keepalived = {
       enable = true;
@@ -210,7 +206,6 @@ in
       };
     };
 
-    # Adjust kernel sysctl settings
     boot.kernel.sysctl = {
       "net.ipv4.conf.all.forwarding" = true;
       "net.ipv6.conf.all.forwarding" = true;
@@ -219,7 +214,6 @@ in
       "net.ipv6.conf.all.use_tempaddr" = 0;
     };
 
-    # Adjust assertions to use the custom options
     assertions = [
       {
         assertion = config.hv-Firewall.vrrpPriority.WAN_VIP != 0;
@@ -231,11 +225,10 @@ in
       }
     ];
 
-    # Use environment.etc to place the scripts at the specific path
     environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
       #!/bin/sh
       WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-      ip route add default via $WAN_GATEWAY_IP
+      ip route add default via $WANGGWAY_IP
     '';
     environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
       #!/bin/sh
@@ -244,3 +237,4 @@ in
     '';
   };
 }
+
