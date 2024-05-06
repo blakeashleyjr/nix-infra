@@ -5,7 +5,7 @@ let
   wanGatewayPath = config.age.secrets."wan-gateway".path;
   publicIp1Path = config.age.secrets."public-ip-1".path;
 
-  secretEnvFile = "/run/secrets/keepalived.env";
+  secretEnvFile = "/run/keepalived/secrets";
 
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
     #!/bin/sh
@@ -154,54 +154,6 @@ in
       StateDirectory = "dnscrypt-proxy";
     };
 
-    fileSystems."/run/dnscrypt-proxy" = {
-      fsType = "tmpfs";
-      device = "tmpfs";
-      options = [
-        "nosuid"
-        "nodev"
-        "noexec"
-        "size=50M"
-      ];
-    };
-
-    systemd.services.keepalived-secrets = {
-      description = "Export secrets for Keepalived";
-      before = [ "keepalived.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "keepalived_script";
-        Group = "keepalived_script";
-        ExecStart = pkgs.writeScript "export-secrets.sh" ''
-          #!/bin/sh
-          touch ${secretEnvFile}
-          echo "WAN_GATEWAY_IP=$(cat ${wanGatewayPath})" > ${secretEnvFile}
-          echo "PUBLIC_IP_1=$(cat ${publicIp1Path})" >> ${secretEnvFile}
-          chmod 600 ${secretEnvFile}
-        '';
-      };
-    };
-
-
-    age.secrets."wan-gateway".owner = "keepalived_script";
-    age.secrets."public-ip-1".owner = "keepalived_script";
-
-    environment.etc."agenix/add-gateway.sh".mode = "0700";
-    environment.etc."agenix/add-gateway.sh".user = "keepalived_script";
-    environment.etc."agenix/del-gateway.sh".mode = "0700";
-    environment.etc."agenix/del-gateway.sh".user = "keepalived_script";
-
-    systemd.mounts = [
-      {
-        what = "tmpfs";
-        where = "/run/secrets";
-        type = "tmpfs";
-        options = "nosuid,nodev,noexec,size=1M,mode=0700";
-        wantedBy = [ "multi-user.target" ];
-      }
-    ];
-
     users.users.keepalived_script = {
       isSystemUser = true;
       description = "User for Keepalived scripts";
@@ -209,6 +161,26 @@ in
     };
 
     users.groups.keepalived_script = { };
+
+    systemd.services.keepalived-secrets = {
+      description = "Prepare secrets for Keepalived";
+      before = [ "keepalived.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "root";
+        Group = "root";
+        ExecStart = pkgs.writeScript "keepalived-secrets.sh" ''
+          #!/bin/sh
+          mkdir -p /run/keepalived
+          chown keepalived_script:keepalived_script /run/keepalived
+          chmod 0700 /run/keepalived
+          echo "PUBLIC_IP_1=$(cat ${publicIp1Path})" > ${secretEnvFile}
+          chown keepalived_script:keepalived_script ${secretEnvFile}
+          chmod 0600 ${secretEnvFile}
+        '';
+      };
+    };
 
     services.keepalived = {
       enable = true;
