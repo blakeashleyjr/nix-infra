@@ -183,14 +183,24 @@ in
       };
     };
 
-    # systemd.mounts = [
-    #   {
-    #     where = "/run/secrets";
-    #     type = "tmpfs";
-    #     options = "nosuid,nodev,noexec,size=1M,mode=0700";
-    #     wantedBy = [ "multi-user.target" ];
-    #   }
-    # ];
+
+    age.secrets."wan-gateway".owner = "keepalived_script";
+    age.secrets."public-ip-1".owner = "keepalived_script";
+
+    environment.etc."agenix/add-gateway.sh".mode = "0700";
+    environment.etc."agenix/add-gateway.sh".user = "keepalived_script";
+    environment.etc."agenix/del-gateway.sh".mode = "0700";
+    environment.etc."agenix/del-gateway.sh".user = "keepalived_script";
+
+    systemd.mounts = [
+      {
+        what = "tmpfs";
+        where = "/run/secrets";
+        type = "tmpfs";
+        options = "nosuid,nodev,noexec,size=1M,mode=0700";
+        wantedBy = [ "multi-user.target" ];
+      }
+    ];
 
     users.users.keepalived_script = {
       isSystemUser = true;
