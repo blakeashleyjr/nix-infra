@@ -5,10 +5,7 @@ let
   wanGatewayPath = config.age.secrets."wan-gateway".path;
   publicIp1Path = config.age.secrets."public-ip-1".path;
 
-  secretEnvFile = pkgs.writeText "keepalived.env" ''
-    WAN_GATEWAY_IP=$(cat "${wanGatewayPath}")
-    PUBLIC_IP_1=$(cat "${publicIp1Path}")
-  '';
+  secretEnvFile = "/run/keepalived/secrets.env";
 
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
     #!/bin/sh
@@ -71,7 +68,7 @@ in
       });
       default = [
         { ip = "$PUBLIC_IP_1"; dev = "br-wan"; } # WAN VIP
-        { ip = "10.173.3.3/24"; dev = "br-lanF"; } # LAN VIP
+        { ip = "10.173.3.3/24"; dev = "br-lan"; } # LAN VIP
       ];
       description = "VRRP IPs configuration.";
     };
@@ -167,6 +164,24 @@ in
         "size=50M"
       ];
     };
+
+    systemd.services.keepalived-secrets = {
+      description = "Export secrets for Keepalived";
+      before = [ "keepalived.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "keepalived";
+        Group = "keepalived";
+        ExecStart = pkgs.writeScript "export-secrets.sh" ''
+          #!/bin/sh
+          echo "WAN_GATEWAY_IP=$(cat ${wanGatewayPath})" > ${secretEnvFile}
+          echo "PUBLIC_IP_1=$(cat ${publicIp1Path})" >> ${secretEnvFile}
+          chmod 600 ${secretEnvFile}
+        '';
+      };
+    };
+
 
     users.users.keepalived_script = {
       isSystemUser = true;
