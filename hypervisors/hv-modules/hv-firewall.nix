@@ -210,6 +210,11 @@ in
         '';
       };
     };
+    systemd.services.keepalived =
+      {
+        requires = [ "network-online.target" ];
+        after = [ "network-online.target" "network-pre.target" "br-heartbeat.service" ];
+      };
 
     services.keepalived = {
       enable = true;
