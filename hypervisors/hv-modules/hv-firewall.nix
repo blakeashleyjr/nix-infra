@@ -188,11 +188,13 @@ in
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
-        User = "keepalived_script";
-        Group = "keepalived_script";
+        User = "root";
+        Group = "root";
         ExecStart = pkgs.writeScript "keepalived-scripts.sh" ''
           #!/bin/sh
           mkdir -p /run/keepalived
+          chown keepalived_script:keepalived_script /run/keepalived
+          chmod 0750 /run/keepalived
           echo '${pkgs.writeScript "add-gateway.sh" ''
             #!/bin/sh
             WAN_GATEWAY_IP=$(cat ${wanGatewayPath})  
