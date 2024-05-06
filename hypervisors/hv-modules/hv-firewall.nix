@@ -13,8 +13,8 @@ let
     ip route ${command} default via $IP
   '';
 
-  addGatewayScriptPath = "/run/agenix/add-gateway.sh";
-  delGatewayScriptPath = "/run/agenix/del-gateway.sh";
+  addGatewayScriptPath = "/run/keepalived/add-gateway.sh";
+  delGatewayScriptPath = "/run/keepalived/del-gateway.sh";
 in
 {
   options.hv-Firewall = {
@@ -182,17 +182,44 @@ in
       };
     };
 
+    systemd.services.keepalived-scripts = {
+      description = "Prepare scripts for Keepalived";
+      before = [ "keepalived.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "keepalived_script";
+        Group = "keepalived_script";
+        ExecStart = pkgs.writeScript "keepalived-scripts.sh" ''
+          #!/bin/sh
+          mkdir -p /run/keepalived
+          echo '${pkgs.writeScript "add-gateway.sh" ''
+            #!/bin/sh
+            WAN_GATEWAY_IP=$(cat ${wanGatewayPath})  
+            ip route add default via $WAN_GATEWAY_IP
+          ''}' > ${addGatewayScriptPath}
+          echo '${pkgs.writeScript "del-gateway.sh" ''
+            #!/bin/sh  
+            WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+            ip route del default via $WAN_GATEWAY_IP  
+          ''}' > ${delGatewayScriptPath}
+          chown keepalived_script:keepalived_script ${addGatewayScriptPath} ${delGatewayScriptPath}
+          chmod 0500 ${addGatewayScriptPath} ${delGatewayScriptPath}
+        '';
+      };
+    };
+
     services.keepalived = {
       enable = true;
       secretFile = secretEnvFile;
       vrrpScripts = {
         add_default_gw = {
-          script = "${pkgs.coreutils}/bin/sh ${addGatewayScriptPath}";
+          script = addGatewayScriptPath;
           interval = 1;
           weight = 10;
         };
         del_default_gw = {
-          script = "${pkgs.coreutils}/bin/sh ${delGatewayScriptPath}";
+          script = delGatewayScriptPath;
           interval = 1;
           weight = -10;
         };
