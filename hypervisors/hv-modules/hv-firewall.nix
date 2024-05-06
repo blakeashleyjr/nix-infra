@@ -206,7 +206,7 @@ in
             ip route del default via $WAN_GATEWAY_IP  
           ''}' > ${delGatewayScriptPath}
           chown keepalived_script:keepalived_script ${addGatewayScriptPath} ${delGatewayScriptPath}
-          chmod 0500 ${addGatewayScriptPath} ${delGatewayScriptPath}
+          chmod 0550 ${addGatewayScriptPath} ${delGatewayScriptPath}
         '';
       };
     };
@@ -214,6 +214,7 @@ in
     services.keepalived = {
       enable = true;
       secretFile = secretEnvFile;
+      enableScriptSecurity = true;
       vrrpScripts = {
         add_default_gw = {
           script = addGatewayScriptPath;
