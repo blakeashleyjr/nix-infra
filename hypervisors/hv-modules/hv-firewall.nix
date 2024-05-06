@@ -165,24 +165,6 @@ in
       ];
     };
 
-    age.secrets."wan-gateway".owner = "keepalived_script";
-    age.secrets."wan-gateway".group = "keys";
-    age.secrets."wan-gateway".mode = "0440";
-
-    age.secrets."public-ip-1".owner = "keepalived_script";
-    age.secrets."public-ip-1".group = "keys";
-    age.secrets."public-ip-1".mode = "0440";
-
-    systemd.services.create-secrets-dir = {
-      description = "Create /run/secrets directory";
-      before = [ "keepalived-secrets.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.coreutils}/bin/mkdir -p /run/secrets";
-      };
-    };
-
     systemd.services.keepalived-secrets = {
       description = "Export secrets for Keepalived";
       before = [ "keepalived.service" ];
@@ -193,6 +175,7 @@ in
         Group = "keepalived_script";
         ExecStart = pkgs.writeScript "export-secrets.sh" ''
           #!/bin/sh
+          touch ${secretEnvFile}
           echo "WAN_GATEWAY_IP=$(cat ${wanGatewayPath})" > ${secretEnvFile}
           echo "PUBLIC_IP_1=$(cat ${publicIp1Path})" >> ${secretEnvFile}
           chmod 600 ${secretEnvFile}
@@ -200,19 +183,14 @@ in
       };
     };
 
-    fileSystems."/run/secrets" = {
-      fsType = "tmpfs";
-      device = "tmpfs";
-      options = [
-        "nosuid"
-        "nodev"
-        "noexec"
-        "size=1M"
-        "mode=0700"
-        "uid=${toString config.users.users.keepalived_script.uid}"
-        "gid=${toString config.users.groups.keepalived_script.gid}"
-      ];
-    };
+    # systemd.mounts = [
+    #   {
+    #     where = "/run/secrets";
+    #     type = "tmpfs";
+    #     options = "nosuid,nodev,noexec,size=1M,mode=0700";
+    #     wantedBy = [ "multi-user.target" ];
+    #   }
+    # ];
 
     users.users.keepalived_script = {
       isSystemUser = true;
@@ -277,13 +255,14 @@ in
 
     environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
       #!/bin/sh
-      WAN_GATEWAY IP = $(cat ${wanGatewayPath})
-      ip route add default via $WAN_GATEWAY IP
+      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+      ip route add default via $WAN_GATEWAY_IP
     '';
     environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
       #!/bin/sh
-      WAN_GATEWAY IP = $(cat ${wanGatewayPath})
+      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
       ip route del default via $WAN_GATEWAY_IP
     '';
+
   };
 }
