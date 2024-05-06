@@ -213,6 +213,10 @@ in
     systemd.services.keepalived = {
       requires = [ "network-online.target" ];
       after = [ "network-online.target" "network-pre.target" "br-heartbeat.service" ];
+      serviceConfig = {
+        User = "keepalived_script";
+        Group = "keepalived_script";
+      };
     };
 
     services.keepalived = {
