@@ -165,6 +165,24 @@ in
       ];
     };
 
+    age.secrets."wan-gateway".owner = "keepalived_script";
+    age.secrets."wan-gateway".group = "keys";
+    age.secrets."wan-gateway".mode = "0440";
+
+    age.secrets."public-ip-1".owner = "keepalived_script";
+    age.secrets."public-ip-1".group = "keys";
+    age.secrets."public-ip-1".mode = "0440";
+
+    systemd.services.create-secrets-dir = {
+      description = "Create /run/secrets directory";
+      before = [ "keepalived-secrets.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.coreutils}/bin/mkdir -p /run/secrets";
+      };
+    };
+
     systemd.services.keepalived-secrets = {
       description = "Export secrets for Keepalived";
       before = [ "keepalived.service" ];
@@ -182,7 +200,6 @@ in
       };
     };
 
-
     fileSystems."/run/secrets" = {
       fsType = "tmpfs";
       device = "tmpfs";
@@ -192,6 +209,8 @@ in
         "noexec"
         "size=1M"
         "mode=0700"
+        "uid=${toString config.users.users.keepalived_script.uid}"
+        "gid=${toString config.users.groups.keepalived_script.gid}"
       ];
     };
 
