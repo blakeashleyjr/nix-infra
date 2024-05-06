@@ -5,7 +5,7 @@ let
   wanGatewayPath = config.age.secrets."wan-gateway".path;
   publicIp1Path = config.age.secrets."public-ip-1".path;
 
-  secretEnvFile = "/run/keepalived/secrets.env";
+  secretEnvFile = "/run/secrets/keepalived.env";
 
   scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
     #!/bin/sh
@@ -182,6 +182,18 @@ in
       };
     };
 
+
+    fileSystems."/run/secrets" = {
+      fsType = "tmpfs";
+      device = "tmpfs";
+      options = [
+        "nosuid"
+        "nodev"
+        "noexec"
+        "size=1M"
+        "mode=0700"
+      ];
+    };
 
     users.users.keepalived_script = {
       isSystemUser = true;
