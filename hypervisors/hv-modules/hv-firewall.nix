@@ -171,8 +171,8 @@ in
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
-        User = "keepalived";
-        Group = "keepalived";
+        User = "keepalived_script";
+        Group = "keepalived_script";
         ExecStart = pkgs.writeScript "export-secrets.sh" ''
           #!/bin/sh
           echo "WAN_GATEWAY_IP=$(cat ${wanGatewayPath})" > ${secretEnvFile}
