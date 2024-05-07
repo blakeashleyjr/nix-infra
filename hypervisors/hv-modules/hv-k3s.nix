@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 
 let
   isEnabled = config.k3s.enable;
@@ -40,10 +40,10 @@ in
 
   config = lib.mkIf isEnabled {
     services.k3s = {
-      role = config.services.k3s.role;
-      serverAddr = config.services.k3s.serverAddr;
-      token = lib.mkIf (!config.services.k3s.clusterInit && config.services.k3s.token != null) config.services.k3s.token;
-      extraFlags = config.services.k3s.extraFlags;
+      role = config.k3s.role;
+      serverAddr = config.k3s.serverAddr;
+      token = lib.mkIf (!config.k3s.clusterInit && config.k3s.token != null) config.k3s.token;
+      extraFlags = config.k3s.extraFlags;
     };
   };
 }
