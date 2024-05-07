@@ -51,7 +51,6 @@
             ./hypervisors/hv-2/hv-2.nix
             ({ pkgs, config, lib, ... }: {
               config = {
-                # Properly nest hv-Firewall configuration under `config`
                 hv-Firewall.vrrpPriority = {
                   WAN_VIP = 90;
                   LAN_VIP = 90;
@@ -62,6 +61,12 @@
                   ssh = true;
                   exitNode = true;
                   exitNodeAllowLANAccess = true;
+                };
+                k3s = {
+                  enable = true;
+                  role = "server";
+                  clusterInit = true;
+                  extraFlags = [ "--flannel-backend=none" "--disable-network-policy" ];
                 };
               };
             })
