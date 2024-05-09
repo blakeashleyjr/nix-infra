@@ -77,6 +77,16 @@ in
       default = { WAN_VIP = 0; LAN_VIP = 0; };
       description = "VRRP priority settings.";
     };
+    trustedSshSources = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "10.0.0.0/8" ];
+      description = "Trusted IP addresses or networks for SSH access.";
+    };
+    trustedIcmpSources = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "10.0.0.0/8" ];
+      description = "Trusted IP addresses or networks for ICMP echo requests (ping).";
+    };
   };
 
   config = {
@@ -87,26 +97,67 @@ in
         family = "ip";
         enable = true;
         content = ''
+          # Set default policies to drop for all chains
           chain input {
             type filter hook input priority 0;
-            # Allow established and related connections
-            ct state {established, related} accept;
-            # Allow DNS queries from specified LAN DNS forwarders to the DNS server
-            iifname "${config.hv-Firewall.lanInterface}" ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.dnsForwardingAddresses} } udp dport 53 accept;
-            # Explicitly drop all incoming connections on the WAN interface
-            iifname "${config.hv-Firewall.wanInterface}" drop;
+            policy drop;
           }
           chain forward {
             type filter hook forward priority 0;
-            # Only allow forwarding of established or related connections
-            ct state {established, related} accept;
-            # Drop all other forwarded packets by default
             policy drop;
           }
           chain output {
             type filter hook output priority 0;
-            # Accept all outbound packets initiated from within your network
-            policy accept;
+            policy drop;
+          }
+
+          # Input chain rules
+          chain input {
+            # Allow established and related connections
+            ct state {established, related} accept;
+
+            # Allow DNS queries from specified LAN DNS forwarders to the DNS server
+            iifname "${config.hv-Firewall.lanInterface}" ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.dnsForwardingAddresses} } udp dport 53 accept;
+
+            # Allow SSH access from trusted IP addresses or networks
+            ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.trustedSshSources} } tcp dport 22 accept;
+
+            # Allow ICMP echo requests (ping) from trusted IP addresses or networks
+            ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.trustedIcmpSources} } icmp type echo-request accept;
+
+            # Allow DHCPv6 client traffic to the link-local address range
+            # ip6 daddr fe80::/64 udp dport 546 accept;
+
+            # Implement rate limiting for incoming connections
+            # Adjust the rate and burst values based on your requirements
+            limit rate 10/second burst 20 packets log prefix "Rate limit exceeded: " drop;
+          }
+
+          # Forward chain rules
+          chain forward {
+            # Only allow forwarding of established or related connections
+            ct state {established, related} accept;
+          }
+
+          # Output chain rules
+          chain output {
+            # Allow established and related connections
+            ct state {established, related} accept;
+
+            # Allow outbound DNS queries
+            udp dport 53 accept;
+
+            # Allow outbound NTP queries
+            udp dport 123 accept;
+
+            # Allow outbound HTTP/HTTPS traffic
+            tcp dport { 80, 443 } accept;
+
+            # Allow outbound SSH connections
+            tcp dport 22 accept;
+
+            # Allow outbound ICMP echo requests (ping)
+            icmp type echo-request accept;
           }
         '';
       };
