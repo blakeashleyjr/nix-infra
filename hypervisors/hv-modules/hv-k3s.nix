@@ -32,16 +32,17 @@ in
     };
 
     extraFlags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
+      type = lib.types.nullOr lib.types.str;
+      default = null;
       description = "Extra flags to pass to the k3s binary.";
     };
   };
 
   config = lib.mkIf isEnabled {
     services.k3s = {
+      enable = true;
       role = config.k3s.role;
-      serverAddr = config.k3s.serverAddr;
+      serverAddr = lib.mkIf (!config.k3s.clusterInit) config.k3s.serverAddr;
       token = lib.mkIf (!config.k3s.clusterInit && config.k3s.token != null) config.k3s.token;
       extraFlags = config.k3s.extraFlags;
     };

@@ -66,7 +66,7 @@
                   enable = true;
                   role = "server";
                   clusterInit = true;
-                  extraFlags = [ "--flannel-backend=none" "--disable-network-policy" ];
+                  extraFlags = "--flannel-backend=none --disable-network-policy";
                 };
               };
             })
