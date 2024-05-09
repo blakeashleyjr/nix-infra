@@ -125,6 +125,9 @@ in
             # Allow ICMP echo requests (ping) from trusted IP addresses or networks
             ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.trustedIcmpSources} } icmp type echo-request accept;
 
+            # Allow incoming HTTP/HTTPS traffic from the local network
+            iifname "${config.hv-Firewall.lanInterface}" tcp dport { 80, 443 } accept;
+
             # Allow DHCPv6 client traffic to the link-local address range
             # ip6 daddr fe80::/64 udp dport 546 accept; # Doesn't work
 
