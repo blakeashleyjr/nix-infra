@@ -64,7 +64,7 @@ in
     };
 
     environment.systemPackages = with pkgs; [
-      kubernetes-helm-wrapped
+      kubernetes-helm
       kubectl
     ];
   };
