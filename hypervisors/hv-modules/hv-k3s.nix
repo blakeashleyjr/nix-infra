@@ -46,6 +46,7 @@ in
       token = lib.mkIf (!config.k3s.clusterInit && config.k3s.token != null) config.k3s.token;
       extraFlags = config.k3s.extraFlags;
     };
+
     # Custom systemd service to copy the k3s config
     systemd.services.copy-k3s-config = {
       description = "Copy K3s config to /home/serveradmin";
@@ -61,5 +62,10 @@ in
         '';
       };
     };
+
+    environment.systemPackages = with pkgs; [
+      kubernetes-helm-wrapped
+      kubectl
+    ];
   };
 }
