@@ -108,7 +108,7 @@ in
           }
           chain output {
             type filter hook output priority 0;
-            policy drop;
+            policy accept;
           }
 
           # Input chain rules
@@ -127,13 +127,6 @@ in
 
             # Allow incoming HTTP/HTTPS traffic from the local network
             iifname "${config.hv-Firewall.lanInterface}" tcp dport { 80, 443 } accept;
-
-            # Allow DHCPv6 client traffic to the link-local address range
-            # ip6 daddr fe80::/64 udp dport 546 accept; # Doesn't work
-
-            # Implement rate limiting for incoming connections
-            # Adjust the rate and burst values based on your requirements
-            # limit rate 10/second burst 20 packets log prefix "Rate limit exceeded: " drop; # Doesn't work
           }
 
           # Forward chain rules
@@ -144,23 +137,8 @@ in
 
           # Output chain rules
           chain output {
-            # Allow established and related connections
-            ct state {established, related} accept;
-
-            # Allow outbound DNS queries
-            udp dport 53 accept;
-
-            # Allow outbound NTP queries
-            udp dport 123 accept;
-
-            # Allow outbound HTTP/HTTPS traffic
-            tcp dport { 80, 443 } accept;
-
-            # Allow outbound SSH connections
-            tcp dport 22 accept;
-
-            # Allow outbound ICMP echo requests (ping)
-            icmp type echo-request accept;
+            # Allow all outgoing traffic
+            accept;
           }
         '';
       };
