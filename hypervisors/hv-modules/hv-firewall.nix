@@ -126,11 +126,11 @@ in
             ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.trustedIcmpSources} } icmp type echo-request accept;
 
             # Allow DHCPv6 client traffic to the link-local address range
-            # ip6 daddr fe80::/64 udp dport 546 accept;
+            # ip6 daddr fe80::/64 udp dport 546 accept; # Doesn't work
 
             # Implement rate limiting for incoming connections
             # Adjust the rate and burst values based on your requirements
-            limit rate 10/second burst 20 packets log prefix "Rate limit exceeded: " drop;
+            # limit rate 10/second burst 20 packets log prefix "Rate limit exceeded: " drop; # Doesn't work
           }
 
           # Forward chain rules
