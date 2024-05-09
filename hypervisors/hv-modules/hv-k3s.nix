@@ -46,5 +46,18 @@ in
       token = lib.mkIf (!config.k3s.clusterInit && config.k3s.token != null) config.k3s.token;
       extraFlags = config.k3s.extraFlags;
     };
+    # Custom systemd service to copy the k3s config
+    systemd.services.copy-k3s-config = {
+      description = "Copy K3s config to /home/serveradmin";
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+      before = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.coreutils}/bin/cp -r /etc/rancher/k3s /home/serveradmin/k3s";
+        ExecStartPost = "${pkgs.coreutils}/bin/chown -R serveradmin:serveradmin /home/serveradmin/k3s && ${pkgs.coreutils}/bin/chmod -R 700 /home/serveradmin/k3s";
+      };
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 }
