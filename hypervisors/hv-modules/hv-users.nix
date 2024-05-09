@@ -17,6 +17,11 @@
     gid = 1000;
   };
 
-  programs.fish.enable = true;
+  programs.fish = {
+    enable = true;
+    interactiveShellInit = ''
+      
+  '';
+  };
 
 }

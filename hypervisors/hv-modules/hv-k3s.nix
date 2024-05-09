@@ -54,9 +54,10 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStart = ''
-          ${pkgs.coreutils}/bin/cp -r /etc/rancher/k3s /home/serveradmin/k3s
-          ${pkgs.coreutils}/bin/chown -R serveradmin:serveradmin /home/serveradmin/k3s
-          ${pkgs.coreutils}/bin/chmod -R 700 /home/serveradmin/k3s
+          ${pkgs.coreutils}/bin/mkdir -p /home/serveradmin/.kube/
+          ${pkgs.coreutils}/bin/cp /etc/rancher/k3s/k3s.yaml /home/serveradmin/.kube/config
+          ${pkgs.coreutils}/bin/chown -R serveradmin:serveradmin /home/serveradmin/
+          ${pkgs.coreutils}/bin/chmod -R 700 /home/serveradmin/
         '';
       };
     };
