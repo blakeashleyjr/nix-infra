@@ -28,7 +28,7 @@ with lib;
   boot = {
     kernelParams = [ "security=apparmor" "slab_nomerge" "page_poison=1" "page_alloc.shuffle=1" "debugfs=off" ];
 
-    kernelPackages = mkDefault pkgs.linuxPackages_hardened; # Use hardened kernel for enhanced security.
+    kernelPackages = mkDefault pkgs.linuxPackages_latest;
 
     kernel.sysctl = {
       # General protection settings.
