@@ -25,59 +25,66 @@ with lib;
   services.logrotate.checkConfig = false; # Disable logrotate configuration checks to prevent log rotation issues and build errors.
 
   ## Sysctl Settings for Additional Kernel Hardening
-  boot.kernel.sysctl = {
-    # General protection settings.
-    "kernel.kptr_restrict" = 2; # Hide kernel pointers, even from processes with CAP_SYSLOG.
-    "kernel.printk" = "3 3 3 3"; # Limit kernel message logging to prevent information leakage.
-    "kernel.sysrq" = 4; # Restrict Secure Attention Key functions to prevent unauthorized access.
-    "kernel.yama.ptrace_scope" = 2; # Limit PTRACE usage to enhance process isolation.
-    "net.core.bpf_jit_enable" = false; # Disable BPF JIT compiler to mitigate spray attacks.
-    "kernel.ftrace_enabled" = false; # Disable ftrace to prevent debugging and tracing by attackers.
+  boot = {
+    kernelParams = [ "security=apparmor" "slab_nomerge" "page_poison=1" "page_alloc.shuffle=1" "debugfs=off" ];
 
-    # Network security enhancements.
-    "dev.tty.ldisc_autoload" = 0; # Disable TTY line discipline autoloading.
-    "net.ipv4.tcp_syncookies" = 1; # Enable SYN cookies to protect against SYN flood attacks.
-    "net.ipv4.tcp_rfc1337" = 1; # Use RFC 1337 fix to protect against TIME-WAIT assassination.
-    "net.ipv4.conf.all.log_martians" = true; # Log martian packets to detect misrouting or attacks.
-    "net.ipv4.conf.all.rp_filter" = "1"; # Enable strict reverse path filtering.
-    "net.ipv4.icmp_echo_ignore_broadcasts" = true; # Ignore ICMP broadcasts to mitigate SMURF attacks.
-    "net.ipv4.conf.all.accept_redirects" = false; # Ignore ICMP redirects to prevent routing attacks.
-    "net.ipv4.conf.all.secure_redirects" = false;
-    "net.ipv6.conf.all.accept_redirects" = false; # Apply the same settings for IPv6.
+    kernelPackages = mkDefault pkgs.linuxPackages_hardened; # Use hardened kernel for enhanced security.
 
-    # Congestion and throughput optimizations.
-    "net.core.default_qdisc" = "fq"; # Use Fair Queueing to improve packet scheduling.
-    "net.ipv4.tcp_congestion_control" = "bbr"; # Enable BBR for improved congestion control.
+    kernel.sysctl = {
+      # General protection settings.
+      "kernel.kptr_restrict" = 2; # Hide kernel pointers, even from processes with CAP_SYSLOG.
+      "kernel.printk" = "3 3 3 3"; # Limit kernel message logging to prevent information leakage.
+      "kernel.sysrq" = 4; # Restrict Secure Attention Key functions to prevent unauthorized access.
+      "kernel.yama.ptrace_scope" = 2; # Limit PTRACE usage to enhance process isolation.
+      "net.core.bpf_jit_enable" = false; # Disable BPF JIT compiler to mitigate spray attacks.
+      "kernel.ftrace_enabled" = false; # Disable ftrace to prevent debugging and tracing by attackers.
+
+      # Network security enhancements.
+      "dev.tty.ldisc_autoload" = 0; # Disable TTY line discipline autoloading.
+      "net.ipv4.tcp_syncookies" = 1; # Enable SYN cookies to protect against SYN flood attacks.
+      "net.ipv4.tcp_rfc1337" = 1; # Use RFC 1337 fix to protect against TIME-WAIT assassination.
+      "net.ipv4.conf.all.log_martians" = true; # Log martian packets to detect misrouting or attacks.
+      "net.ipv4.conf.all.rp_filter" = "1"; # Enable strict reverse path filtering.
+      "net.ipv4.icmp_echo_ignore_broadcasts" = true; # Ignore ICMP broadcasts to mitigate SMURF attacks.
+      "net.ipv4.conf.all.accept_redirects" = false; # Ignore ICMP redirects to prevent routing attacks.
+      "net.ipv4.conf.all.secure_redirects" = false;
+      "net.ipv6.conf.all.accept_redirects" = false; # Apply the same settings for IPv6.
+
+      # Congestion and throughput optimizations.
+      "net.core.default_qdisc" = "fq"; # Use Fair Queueing to improve packet scheduling.
+      "net.ipv4.tcp_congestion_control" = "bbr"; # Enable BBR for improved congestion control.
+    };
+
+    ## Kernel Module Blacklisting
+    ## Prevent loading of modules for obsolete or insecure protocols and filesystems.
+    blacklistedKernelModules = [
+      "ax25"
+      "netrom"
+      "rose" # Obsolete network protocols.
+      "adfs"
+      "affs"
+      "bfs"
+      "befs"
+      "cramfs"
+      "efs"
+      "erofs"
+      "exofs"
+      "freevxfs"
+      "f2fs"
+      "hfs"
+      "hpfs"
+      "jfs"
+      "minix"
+      "nilfs2"
+      "ntfs"
+      "omfs"
+      "qnx4"
+      "qnx6"
+      "sysv"
+      "ufs" # Insecure or rarely used filesystems.
+    ];
+
   };
-
-  ## Kernel Module Blacklisting
-  ## Prevent loading of modules for obsolete or insecure protocols and filesystems.
-  boot.blacklistedKernelModules = [
-    "ax25"
-    "netrom"
-    "rose" # Obsolete network protocols.
-    "adfs"
-    "affs"
-    "bfs"
-    "befs"
-    "cramfs"
-    "efs"
-    "erofs"
-    "exofs"
-    "freevxfs"
-    "f2fs"
-    "hfs"
-    "hpfs"
-    "jfs"
-    "minix"
-    "nilfs2"
-    "ntfs"
-    "omfs"
-    "qnx4"
-    "qnx6"
-    "sysv"
-    "ufs" # Insecure or rarely used filesystems.
-  ];
 
   ## Sudo and User Privilege Settings
   security.sudo.execWheelOnly = true; # Restrict sudo execution to the wheel group.
@@ -98,13 +105,10 @@ with lib;
   systemd.services.nix-daemon.serviceConfig.OOMScoreAdjust = mkDefault 250; # Prioritize important services over builds.
 
   ## Additional Security Measures
-  boot.kernelPackages = mkDefault pkgs.linuxPackages_hardened; # Use hardened kernel for enhanced security.
 
   security.allowSimultaneousMultithreading = false; # Disable SMT to protect against side-channel attacks.
   security.unprivilegedUsernsClone = mkDefault config.virtualisation.containers.enable; # Allow unprivileged user namespaces if containers are enabled.
   security.virtualisation.flushL1DataCache = mkDefault "always"; # Flush L1 cache on VM entry/exit to mitigate side-channel attacks.
-
-  boot.kernelParams = [ "slab_nomerge" "page_poison=1" "page_alloc.shuffle=1" "debugfs=off" ]; # Kernel parameters for additional hardening.
 
   systemd.coredump.enable = false; # Disable core dumps to prevent information leakage.
 
