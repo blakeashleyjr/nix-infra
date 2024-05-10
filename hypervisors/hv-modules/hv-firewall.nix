@@ -129,16 +129,22 @@ in
             iifname "${config.hv-Firewall.lanInterface}" tcp dport { 80, 443 } accept;
           }
 
-          # Forward chain rules
-          chain forward {
-            # Only allow forwarding of established or related connections
-            ct state {established, related} accept;
-          }
-
           # Output chain rules
           chain output {
             # Allow all outgoing traffic
             accept;
+
+            # Specifically allow outgoing DNS
+            udp dport 53 accept;
+
+            # Specifically allow outgoing HTTP/HTTPS for updates
+            tcp dport { 80, 443 } accept;
+          }
+
+          # Forward chain rules
+          chain forward {
+            # Only allow forwarding of established or related connections
+            ct state {established, related} accept;
           }
         '';
       };
