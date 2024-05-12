@@ -67,5 +67,8 @@ in
       kubernetes-helm
       kubectl
     ];
+
+    boot.kernelModules = [ "overlay" ];
+
   };
 }
