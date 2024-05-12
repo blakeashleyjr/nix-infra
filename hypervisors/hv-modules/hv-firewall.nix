@@ -90,88 +90,53 @@ in
   };
 
   config = {
-    networking.nftables.enable = true;
-    networking.nftables.tables = {
-      filter = {
-        name = "filter";
-        family = "ip";
-        enable = true;
-        content = ''
-          chain input {
-            type filter hook input priority 0; policy drop;
-            log prefix "nftables-input-drop: " drop;
-          }
+    networking.nftables = {
+      enable = true;
+      tables = {
+        filter = {
+          name = "filter";
+          family = "ip";
+          enable = true;
+          content = ''
+            chain input {
+              type filter hook input priority 0; policy drop;
+              # Allow traffic from local interfaces
+              iifname "${config.hv-Firewall.lanInterface}" accept;
+              iifname "lo" accept;
 
-          chain output {
-            type filter hook output priority 0; policy accept;
-            log prefix "nftables-output-drop: " drop;
-          }
-
-          chain forward {
-            type filter hook forward priority 0; policy drop;
-            log prefix "nftables-forward-drop: " drop;
-          }
-
-          # Input chain rules
-          chain input {
-            # Allow all traffic on the loopback interface
-            iifname "lo" accept;
-
-            # Allow Kubernetes API server access from local network or localhost
-            iifname "${config.hv-Firewall.lanInterface}"
-            tcp dport { 6443, 6444 } accept;
-
-            # Allow established and related connections
-            ct state {established, related} accept;
-
-            # Allow DNS queries from specified LAN DNS forwarders to the DNS server
-            iifname "${config.hv-Firewall.lanInterface}" ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.dnsForwardingAddresses} } udp dport 53 accept;
-
-            # Allow SSH access from trusted IP addresses or networks
-            ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.trustedSshSources} } tcp dport 22 accept;
-
-            # Allow ICMP echo requests (ping) from trusted IP addresses or networks
-            ip saddr { ${lib.concatStringsSep ", " config.hv-Firewall.trustedIcmpSources} } icmp type echo-request accept;
-
-            # Allow incoming HTTP/HTTPS traffic from the local network
-            iifname "${config.hv-Firewall.lanInterface}" tcp dport { 80, 443 } accept;
-            tcp sport { 80, 443 } accept;
-
-          }
-
-          # Output chain rules
-          chain output {
-            # Allow all outgoing traffic
-            accept;
-
-            # Specifically allow outgoing DNS
-            udp dport 53 accept;
-
-            # Specifically allow outgoing HTTP/HTTPS for updates
-            tcp dport { 80, 443 } accept;
-
-            log prefix "nftables-dropped: " drop;
-          }
-
-          # Forward chain rules
-          chain forward {
-            # Only allow forwarding of established or related connections
-            ct state {established, related} accept;
-          }
-        '';
-      };
-      nat = {
-        name = "nat";
-        family = "ip";
-        enable = false;
-        content = lib.concatMapStringsSep "\n"
-          (network: ''
-            chain postrouting {
-              type nat hook postrouting priority srcnat;
-              ip saddr ${network} oifname "${config.hv-Firewall.wanInterface}" masquerade;
+              # Allow established and related connections
+              ct state {established, related} accept;
             }
-          '')
-          config.hv-Firewall.sourceNatNetworks;
+
+            chain output {
+              type filter hook output priority 0; policy accept;
+              # Allow all outgoing traffic
+              accept;
+            }
+
+            chain forward {
+              type filter hook forward priority 0; policy drop;
+              # Allow forwarding from LAN to LAN
+              iifname "${config.hv-Firewall.lanInterface}" oifname "${config.hv-Firewall.lanInterface}" accept;
+
+              # Allow established and related connections
+              ct state {established, related} accept;
+            }
+          '';
+        };
+        nat = {
+          name = "nat";
+          family = "ip";
+          enable = false;
+          content = lib.concatMapStringsSep "\n"
+            (network: ''
+              chain postrouting {
+                type nat hook postrouting priority srcnat;
+                ip saddr ${network} oifname "${config.hv-Firewall.wanInterface}" masquerade;
+              }
+            '')
+            config.hv-Firewall.sourceNatNetworks;
+        };
       };
     };
 
