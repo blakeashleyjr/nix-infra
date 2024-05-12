@@ -163,7 +163,7 @@ in
       nat = {
         name = "nat";
         family = "ip";
-        enable = true;
+        enable = false;
         content = lib.concatMapStringsSep "\n"
           (network: ''
             chain postrouting {
