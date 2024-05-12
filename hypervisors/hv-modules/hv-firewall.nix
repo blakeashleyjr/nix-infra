@@ -97,18 +97,19 @@ in
         family = "ip";
         enable = true;
         content = ''
-          # Set default policies to drop for all chains
           chain input {
-            type filter hook input priority 0;
-            policy drop;
+            type filter hook input priority 0; policy drop;
+            log prefix "nftables-input-drop: " drop;
           }
-          chain forward {
-            type filter hook forward priority 0;
-            policy drop;
-          }
+
           chain output {
-            type filter hook output priority 0;
-            policy accept;
+            type filter hook output priority 0; policy accept;
+            log prefix "nftables-output-drop: " drop;
+          }
+
+          chain forward {
+            type filter hook forward priority 0; policy drop;
+            log prefix "nftables-forward-drop: " drop;
           }
 
           # Input chain rules
@@ -135,7 +136,7 @@ in
             # Allow incoming HTTP/HTTPS traffic from the local network
             iifname "${config.hv-Firewall.lanInterface}" tcp dport { 80, 443 } accept;
             tcp sport { 80, 443 } accept;
-            
+
           }
 
           # Output chain rules
