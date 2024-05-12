@@ -113,6 +113,13 @@ in
 
           # Input chain rules
           chain input {
+            # Allow all traffic on the loopback interface
+            iifname "lo" accept;
+
+            # Allow Kubernetes API server access from local network or localhost
+            iifname "${config.hv-Firewall.lanInterface}"
+            tcp dport { 6443, 6444 } accept;
+
             # Allow established and related connections
             ct state {established, related} accept;
 
