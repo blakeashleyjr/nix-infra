@@ -181,7 +181,7 @@ in
         server_names = [ "NextDNS-f33fea" ];
         listen_addresses = [ "127.0.0.1:53" "[::1]:53" ];
         ipv6_servers = true;
-        require_dnssec = false;
+        require_dnssec = true;
         bootstrap_resolvers = [ "9.9.9.11:53" "1.1.1.1:53" ];
         log_files_max_size = 10;
         log_files_max_age = 7;
