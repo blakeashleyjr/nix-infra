@@ -134,6 +134,8 @@ in
 
             # Allow incoming HTTP/HTTPS traffic from the local network
             iifname "${config.hv-Firewall.lanInterface}" tcp dport { 80, 443 } accept;
+            tcp sport { 80, 443 } accept;
+            
           }
 
           # Output chain rules
@@ -146,6 +148,8 @@ in
 
             # Specifically allow outgoing HTTP/HTTPS for updates
             tcp dport { 80, 443 } accept;
+
+            log prefix "nftables-dropped: " drop;
           }
 
           # Forward chain rules
