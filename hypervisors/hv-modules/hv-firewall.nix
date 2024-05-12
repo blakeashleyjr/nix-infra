@@ -179,9 +179,9 @@ in
       enable = true;
       settings = {
         server_names = [ "NextDNS-f33fea" ];
-        listen_addresses = [ "[::1]:53" ];
+        listen_addresses = [ "127.0.0.1:53" "[::1]:53" ];
         ipv6_servers = true;
-        require_dnssec = true;
+        require_dnssec = false;
         bootstrap_resolvers = [ "9.9.9.11:53" "1.1.1.1:53" ];
         log_files_max_size = 10;
         log_files_max_age = 7;
