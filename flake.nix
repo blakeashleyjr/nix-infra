@@ -74,5 +74,13 @@
         };
         # Add more hypervisor configurations as needed
       };
+      workstations = {
+        ws-1 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = commonModules ++ workstationModules ++ [
+            ./workstations/ws-1/ws-1.nix
+          ];
+        };
+      };
   };
 }
