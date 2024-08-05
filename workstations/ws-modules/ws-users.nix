@@ -143,7 +143,6 @@
       default-cache-ttl = 86400;
       max-cache-ttl = 86400;
     };
-    pinentryPackage = "gnome3"; # Choose the appropriate pinentry flavor
     enableSSHSupport = true;
     enableExtraSocket = true;
     enableBrowserSocket = true;

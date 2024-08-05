@@ -58,6 +58,7 @@
       {
         hv-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = commonModules ++ hypervisorModules ++ firewallModules ++ k3sModules ++ hypervisorNvidiaModules ++ [
             ./hypervisors/hv-2/hv-2.nix
             ({ pkgs, config, lib, ... }: {
@@ -85,6 +86,7 @@
         };
         ws-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = commonModules ++ workstationModules ++ workstationModules ++ [
             ./workstations/ws-1/ws-1.nix
             ({ pkgs, config, lib, ... }: {
