@@ -32,9 +32,9 @@
       gnupg
       rofi
       teams-for-linux
-      cheese
       libsForQt5.okular
-      nemo
+      # cheese
+      # nemo
       filezilla
       mullvad-browser
       parsec-bin
@@ -48,7 +48,7 @@
       rsync
       vim
       nheko
-      gnome-calculator
+      # gnome-calculator
       tor
       # Fish
       fishPlugins.tide
@@ -62,6 +62,7 @@
       go
       php
       rclone
+      age
      ];
     openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK29aC0ZvTjltZcJkPHSGn01Zlhywr1QJZVtKQ8U3YU1 blake@ashleyjr.com" ];
 
@@ -142,7 +143,7 @@
       default-cache-ttl = 86400;
       max-cache-ttl = 86400;
     };
-    pinentryFlavor = "gnome3"; # Choose the appropriate pinentry flavor
+    pinentryPackage = "gnome3"; # Choose the appropriate pinentry flavor
     enableSSHSupport = true;
     enableExtraSocket = true;
     enableBrowserSocket = true;
