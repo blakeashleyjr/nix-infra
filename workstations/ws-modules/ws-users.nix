@@ -6,13 +6,76 @@
     shell = pkgs.fish;
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-
-    ];
+      firefox
+      thunderbird
+      vscode
+      zellij
+      zoom-us
+      signal-desktop
+      libreoffice-fresh
+      fira-code
+      gimp
+      inkscape
+      obs-studio
+      mpv
+      vlc
+      zathura
+      inkscape
+      protonvpn-gui
+      feh
+      mullvad-vpn
+      yt-dlp
+      fzf
+      alacritty
+      keychain
+      kubectl
+      gnupg
+      rofi
+      teams-for-linux
+      cheese
+      libsForQt5.okular
+      nemo
+      filezilla
+      mullvad-browser
+      parsec-bin
+      gdu
+      glances
+      gotop
+      k9s
+      lazydocker
+      lazygit
+      jq
+      rsync
+      vim
+      nheko
+      gnome-calculator
+      tor
+      # Fish
+      fishPlugins.tide
+      vmware-horizon-client
+      php83Packages.composer
+      webex
+      cobra-cli
+      edgedb
+      tree
+      ncdu
+      go
+      php
+      rclone
+     ];
     openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK29aC0ZvTjltZcJkPHSGn01Zlhywr1QJZVtKQ8U3YU1 blake@ashleyjr.com" ];
 
   };
 
   programs.fish.enable = true;
+
+  environment.systemPackages = with pkgs; [
+
+    ncdu
+    go
+    php
+    rclone
+  ];
 
   # Global Git configuration
   programs.git = {
@@ -31,59 +94,12 @@
     };
   };
 
-  # Gaming
-  programs.java.enable = true;
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-  };
-
-  # Change wallpaper every 5 minutes
-  systemd.timers."swww-random" = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "5min";
-      OnUnitActiveSec = "5min";
-      Unit = "swww-random.service";
-    };
-  };
-
-  systemd.services."swww-random" = {
-    script = ''
-      /run/current-system/sw/bin/fish /home/blake/scripts/set_random_wallpaper.fish
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      User = "blake";
-    };
-  };
-
-  # Pushes updates to second brain every 1 minutes
-  systemd.timers."update-second-brain" = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "1min";
-      OnUnitActiveSec = "1min";
-      Unit = "update-second-brain.service";
-    };
-  };
-
-  systemd.services."update-second-brain" = {
-    script = ''
-      /run/current-system/sw/bin/fish /home/blake/scripts/update-second-brain.fish
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      User = "blake";
-    };
-  };
-
   # Pushes updates to dotfiles every 1 minutes
   systemd.timers."update-dotfiles" = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnBootSec = "1min";
-      OnUnitActiveSec = "1min";
+      OnUnitActiveSec = "30min";
       Unit = "update-dotfiles.service";
     };
   };
@@ -99,46 +115,26 @@
   };
 
 
-  #  # Update the system ever hour
-  #   systemd.timers."update-system" = {
-  #     wantedBy = [ "timers.target" ];
-  #     timerConfig = {
-  #       OnBootSec = "60min";
-  #       OnUnitActiveSec = "60min";
-  #       Unit = "update-system.service";
-  #     };
-  #   };
-
-  #   systemd.services."update-system" = {
-  #     script = ''
-  #       /run/current-system/sw/bin/fish /home/blake/scripts/update-system.fish
-  #     '';
-  #     serviceConfig = {
-  #       Type = "oneshot";
-  #       User = "blake";
-  #     };
-  #   };
-
-
-  # Change Hyprland gaps every 30 minutes to protect oled
-  systemd.timers."gaps-random" = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "30min";
-      OnUnitActiveSec = "30min";
-      Unit = "gaps-random.service";
+   # Update the system ever hour
+    systemd.timers."update-system" = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "60min";
+        OnUnitActiveSec = "60min";
+        Unit = "update-system.service";
+      };
     };
-  };
 
-  systemd.services."gaps-random" = {
-    script = ''
-      /run/current-system/sw/bin/fish /home/blake/scripts/set_random_gaps.fish
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      User = "blake";
+    systemd.services."update-system" = {
+      script = ''
+        /run/current-system/sw/bin/fish /home/blake/scripts/update-system.fish
+      '';
+      serviceConfig = {
+        Type = "oneshot";
+        User = "blake";
+      };
     };
-  };
+
   # Enable and configure the GPG agent
   programs.gnupg.agent = {
     enable = true;

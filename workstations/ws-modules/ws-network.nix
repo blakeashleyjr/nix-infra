@@ -11,6 +11,11 @@ in
     "nextdns-config-ws" = { file = ../../secrets/nextdns-config-ws.age; };
     "nextdns-config-stamp-ws" = { file = ../../secrets/nextdns-config-stamp-ws.age; };
   };
+  
+  systemd.services.dnscrypt-proxy2.serviceConfig = {
+    StateDirectory = "dnscrypt-proxy";
+  };
+
   # DNS Config to Nextdns for now
   services.dnscrypt-proxy2 = {
     enable = true;
