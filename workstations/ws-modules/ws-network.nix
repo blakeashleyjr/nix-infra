@@ -1,5 +1,3 @@
-# "nextdns-config-ws.age".publicKeys = ws ++ users;
-# "nextdns-config-stamp-ws.age".publicKeys = ws ++ users;
 { config, lib, pkgs, ... } @ args:
 let
   # Load secrets
@@ -27,7 +25,7 @@ in
 
       static = {
         "NextDNS-${nextdnsConfigWSSecret}" = {
-          stamp = nextdnsConfigStampWSSecret;
+          stamp = "${nextdnsConfigWSStampSecret}";
         };
       };
     };
