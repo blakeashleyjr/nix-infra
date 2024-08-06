@@ -10,13 +10,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
-    hyprland-contrib = {
-      url = "github:hyprwm/contrib";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, disko, agenix, hyprland, ... } @ inputs: {
+  outputs = { self, nixpkgs, disko, agenix,... } @ inputs: {
     nixosConfigurations = 
       # Define common modules
       let

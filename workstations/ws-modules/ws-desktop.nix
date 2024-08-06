@@ -17,17 +17,16 @@
     enable = true;
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
   };
-
+  
   # System package inclusion for a comprehensive desktop environment
   environment.systemPackages = with pkgs; [
     rofi-wayland
     wlsunset
     wl-clipboard
-    hyprland
     waybar
     libsForQt5.qt5ct
-    hyprland-protocols
-    hyprland-per-window-layout
+    # hyprland-protocols
+    # hyprland-per-window-layout
     xdg-desktop-portal-hyprland
     nwg-displays
     grimblast
