@@ -25,9 +25,6 @@
   nix.settings.auto-optimise-store = true;
 
   environment.systemPackages = with pkgs; [
-
-    agenix.packages.x86_64-linux.default 
-
     # System management and orchestration
     # ansible # Automation tool for software provisioning, configuration management, and application deployment
     kubectl # Kubernetes command-line tool

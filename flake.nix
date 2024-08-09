@@ -23,6 +23,11 @@
           # ./secrets/secrets.nix
           disko.nixosModules.disko
           agenix.nixosModules.default
+          {
+            environment.systemPackages = [ 
+              agenix.packages.x86_64-linux.default 
+            ];
+          }
         ];
         hypervisorModules = [
           ./hypervisors/hv-modules/hv-users.nix
