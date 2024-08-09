@@ -3,6 +3,8 @@
   # Set bootloader limit
   boot.loader.systemd-boot.configurationLimit = 20;
 
+  age.identityPaths = [ "/home/blake/.ssh/id_ed25519_flake_key" ];
+
   virtualisation.docker = {
     enable = true;
 		enableOnBoot = true;

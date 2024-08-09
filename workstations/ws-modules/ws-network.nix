@@ -1,14 +1,14 @@
-{ config, lib, pkgs, ... } @ args:
+{ config, lib, pkgs, inputs, ... } @ args:
 let
+  age.secrets = {
+    "nextdns-config-ws".file = ../secrets/nextdns-config-ws.age;
+    "nextdns-config-stamp-ws".file = ../secrets/nextdns-config-stamp-ws.age;
+  };
   # Load secrets
   nextdnsConfigWSSecret = config.age.secrets."nextdns-config-ws".path;
   nextdnsConfigWSStampSecret = config.age.secrets."nextdns-config-stamp-ws".path;
 in
 {
-  age.secrets = {
-    "nextdns-config-ws" = { file = ../../secrets/nextdns-config-ws.age; };
-    "nextdns-config-stamp-ws" = { file = ../../secrets/nextdns-config-stamp-ws.age; };
-  };
   
   systemd.services.dnscrypt-proxy2.serviceConfig = {
     StateDirectory = "dnscrypt-proxy";

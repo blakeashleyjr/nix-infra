@@ -2,6 +2,9 @@
 
 let
   isEnabled = config.tailscale.enable;
+  age.secrets = {
+    "tailscale-authkey".file = ../secrets/tailscale-authkey.age;
+  };
 in
 {
   options.tailscale = {

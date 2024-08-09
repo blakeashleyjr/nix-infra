@@ -1,6 +1,8 @@
 { config, pkgs, lib, ... }@args:
 {
 
+  age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
   # Use systemd-networkd for network management
   networking.useNetworkd = true;
   networking.useDHCP = false; # Ensure this is explicitly set to avoid conflicts

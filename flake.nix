@@ -7,12 +7,12 @@
     disko.inputs.nixpkgs.follows = "nixpkgs";
     agenix = {
       url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "";
     };
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
   };
 
-  outputs = { self, nixpkgs, disko, agenix,... } @ inputs: {
+  outputs = { self, nixpkgs, agenix, hyprland, disko, ... } @ inputs: {
     nixosConfigurations = 
       # Define common modules
       let
@@ -21,13 +21,13 @@
           ./common-modules/tailscale.nix
           ./common-modules/security.nix
           # ./secrets/secrets.nix
-          disko.nixosModules.disko
+          # disko.nixosModules.disko
           agenix.nixosModules.default
-          {
-            environment.systemPackages = [ 
-              agenix.packages.x86_64-linux.default 
-            ];
-          }
+          # {
+          #   environment.systemPackages = [ 
+          #     agenix.packages.x86_64-linux.default 
+          #   ];
+          # }
         ];
         hypervisorModules = [
           ./hypervisors/hv-modules/hv-users.nix

@@ -1,15 +1,5 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, inputs, ... }:
 {
-
-  # Define all secrets
-  age.secrets = {
-    "tailscale-authkey".file = ../secrets/tailscale-authkey.age;
-    "wan-gateway".file = ../secrets/wan-gateway.age; # defined in the network configuration
-    "public-ip-1".file = ../secrets/public-ip-1.age; # defined in the network configuration
-    "nextdns-config-ws.age".file = ../secrets/nextdns-config-ws.age;
-    "nextdns-config-stamp-ws.age".file = ../secrets/nextdns-config-stamp-ws.age;
-  };
-  age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

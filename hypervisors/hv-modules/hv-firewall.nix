@@ -1,6 +1,12 @@
 { config, lib, pkgs, ... }:
 
 let
+  # Define all secrets
+  age.secrets = {
+    "wan-gateway".file = ../secrets/wan-gateway.age;
+    "public-ip-1".file = ../secrets/public-ip-1.age;
+  };
+
   cfg = config.services.keepalived;
   wanGatewayPath = config.age.secrets."wan-gateway".path;
   publicIp1Path = config.age.secrets."public-ip-1".path;
