@@ -42,8 +42,7 @@
           ./workstations/ws-modules/ws-network.nix
           ./workstations/ws-modules/ws-desktop.nix
           ./workstations/ws-modules/ws-boot.nix
-          ./workstations/ws-modules/ws-system.nix
-          ./workstations/ws-modules/services/fail2ban.nix
+          ./workstations/ws-modules/ws-base.nix
           ./workstations/ws-modules/services/firefox.nix
           ./workstations/ws-modules/services/syncthing.nix
         ];
@@ -85,6 +84,7 @@
           specialArgs = { inherit inputs; };
           modules = commonModules ++ workstationModules ++ workstationModules ++ [
             ./workstations/ws-1/ws-1.nix
+            ./workstations/ws-1/ws-1-hardware.nix
             ({ pkgs, config, lib, ... }: {
               config = {
                 tailscale = {

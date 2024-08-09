@@ -17,11 +17,9 @@
   # Add the Nvidia kernel parameter
   boot.kernelParams = [ "nvidia.NVreg_PreserveVideoMemoryAllocations=1" ];
 
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [ vaapiVdpau nvidia-vaapi-driver ];
-    driSupport = true;
-    driSupport32Bit = true;
   };
 
   boot.blacklistedKernelModules = [ "nouveau" ];

@@ -5,9 +5,6 @@
   networking.useNetworkd = true;
   networking.useDHCP = false; # Ensure this is explicitly set to avoid conflicts
 
-  # No need for sound on a server
-  sound.enable = false;
-
   systemd = {
     # Given that our systems are headless, emergency mode is useless.
     # We prefer the system to attempt to continue booting so
