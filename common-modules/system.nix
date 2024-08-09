@@ -10,6 +10,8 @@
     "nextdns-config-stamp-ws.age".file = ../secrets/nextdns-config-stamp-ws.age;
   };
 
+  age.identityPaths = [ "/etc/ssh/ssh_host_ed25519_key.pub" ];
+
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
