@@ -1,10 +1,10 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, secretActivationScript, ... }:
 
 let
   isEnabled = config.tailscale.enable;
-  age.secrets = {
-    "tailscale-authkey".file = ../secrets/tailscale-authkey.age;
-  };
+
+  # Use the secretActivationScript function
+  tailscaleAuthKeyPath = "/run/tailscale/authkey";
 in
 {
   options.tailscale = {
@@ -150,6 +150,10 @@ in
   };
 
   config = lib.mkIf isEnabled {
+
+    # Use the secretActivationScript function to manage the Tailscale auth key
+    system.activationScripts.tailscaleAuthKey = secretActivationScript "tailscale-authkey" config.age.secrets."tailscale-authkey".path tailscaleAuthKeyPath "tailscale" "tailscale";
+
     environment.systemPackages = [ pkgs.tailscale ];
 
     services.tailscale.enable = true;
@@ -163,7 +167,6 @@ in
 
       script =
         let
-          tailscaleAuthKey = config.tailscale.authKeyPath;
           optionalTailscaleConfig =
             if config.tailscale.configureTailscale then
               lib.strings.concatStringsSep " "
@@ -206,7 +209,7 @@ in
           if [ "$status" = "Running" ]; then
             exit 0
           fi
-          ${pkgs.tailscale}/bin/tailscale up ${optionalTailscaleConfig} --authkey $(cat ${tailscaleAuthKey})
+          ${pkgs.tailscale}/bin/tailscale up ${optionalTailscaleConfig} --authkey $(cat ${tailscaleAuthKeyPath})
         '';
     };
   };

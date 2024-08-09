@@ -1,26 +1,12 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, secretActivationScript, ... }:
 
 let
-  # Define all secrets
-  age.secrets = {
-    "wan-gateway".file = ../secrets/wan-gateway.age;
-    "public-ip-1".file = ../secrets/public-ip-1.age;
-  };
-
   cfg = config.services.keepalived;
-  wanGatewayPath = config.age.secrets."wan-gateway".path;
-  publicIp1Path = config.age.secrets."public-ip-1".path;
+  wanGatewaySecret = config.age.secrets."wan-gateway".path;
+  publicIp1Secret = config.age.secrets."public-ip-1".path;
 
-  secretEnvFile = "/run/keepalived/secrets";
-
-  scriptTemplate = name: command: pkgs.writeScript "${name}.sh" ''
-    #!/bin/sh
-    IP=$WAN_GATEWAY_IP
-    ip route ${command} default via $IP
-  '';
-
-  addGatewayScriptPath = "/run/keepalived/add-gateway.sh";
-  delGatewayScriptPath = "/run/keepalived/del-gateway.sh";
+  addGatewayScriptPath = "/etc/keepalived/add-gateway.sh";
+  delGatewayScriptPath = "/etc/keepalived/del-gateway.sh";
 in
 {
   options.hv-Firewall = {
@@ -41,12 +27,12 @@ in
     };
     wanGatewayPath = lib.mkOption {
       type = lib.types.path;
-      default = wanGatewayPath;
+      default = wanGatewaySecret;
       description = "Path to the WAN gateway secret.";
     };
-    public-ip-1Path = lib.mkOption {
+    publicIp1Path = lib.mkOption {
       type = lib.types.path;
-      default = publicIp1Path;
+      default = publicIp1Secret;
       description = "Path to the public IP 1 secret.";
     };
     dnsForwardingAddresses = lib.mkOption {
@@ -146,6 +132,10 @@ in
       };
     };
 
+    # Use the secretActivationScript function to manage secrets
+    system.activationScripts.wanGatewaySecret = secretActivationScript "wan-gateway" wanGatewaySecret "/run/keepalived/wan-gateway" "keepalived_script" "keepalived_script";
+    system.activationScripts.publicIp1Secret = secretActivationScript "public-ip-1" publicIp1Secret "/run/keepalived/public-ip-1" "keepalived_script" "keepalived_script";
+
     services.dnscrypt-proxy2 = {
       enable = true;
       settings = {
@@ -196,9 +186,9 @@ in
           mkdir -p /run/keepalived
           chown keepalived_script:keepalived_script /run/keepalived
           chmod 0700 /run/keepalived
-          echo "PUBLIC_IP_1=$(cat ${publicIp1Path})" > ${secretEnvFile}
-          chown keepalived_script:keepalived_script ${secretEnvFile}
-          chmod 0600 ${secretEnvFile}
+          echo "PUBLIC_IP_1=$(cat /run/keepalived/public-ip-1)" > /run/keepalived/secrets
+          chown keepalived_script:keepalived_script /run/keepalived/secrets
+          chmod 0600 /run/keepalived/secrets
         '';
       };
     };
@@ -218,12 +208,12 @@ in
           chmod 0750 /run/keepalived
           echo '${pkgs.writeScript "add-gateway.sh" ''
             #!/bin/sh
-            WAN_GATEWAY_IP=$(cat ${wanGatewayPath})  
+            WAN_GATEWAY_IP=$(cat /run/keepalived/wan-gateway)  
             ip route add default via $WAN_GATEWAY_IP
           ''}' > ${addGatewayScriptPath}
           echo '${pkgs.writeScript "del-gateway.sh" ''
             #!/bin/sh  
-            WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
+            WAN_GATEWAY_IP=$(cat /run/keepalived/wan-gateway)
             ip route del default via $WAN_GATEWAY_IP  
           ''}' > ${delGatewayScriptPath}
           chown keepalived_script:keepalived_script ${addGatewayScriptPath} ${delGatewayScriptPath}
@@ -231,18 +221,15 @@ in
         '';
       };
     };
+
     systemd.services.keepalived = {
       requires = [ "network-online.target" ];
       after = [ "network-online.target" "network-pre.target" "br-heartbeat.service" ];
-      # serviceConfig = {
-      #   User = "keepalived_script";
-      #   Group = "keepalived_script";
-      # };
     };
 
     services.keepalived = {
       enable = true;
-      secretFile = secretEnvFile;
+      secretFile = "/run/keepalived/secrets";
       enableScriptSecurity = true;
       vrrpScripts = {
         add_default_gw = {
@@ -293,17 +280,5 @@ in
         message = "vrrpPriority LAN VIP must be set to a non zero value.";
       }
     ];
-
-    environment.etc."agenix/add-gateway.sh".source = pkgs.writeScript "add-gateway.sh" ''
-      #!/bin/sh
-      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-      ip route add default via $WAN_GATEWAY_IP
-    '';
-    environment.etc."agenix/del-gateway.sh".source = pkgs.writeScript "del-gateway.sh" ''
-      #!/bin/sh
-      WAN_GATEWAY_IP=$(cat ${wanGatewayPath})
-      ip route del default via $WAN_GATEWAY_IP
-    '';
-
   };
 }

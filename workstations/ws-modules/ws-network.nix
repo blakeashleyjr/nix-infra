@@ -1,31 +1,25 @@
-{ config, lib, pkgs, inputs, ... } @ args:
+{ config, lib, pkgs, secretActivationScript, ... } @ args:
 let
-  age.secrets = {
-    "nextdns-config-ws".file = ../secrets/nextdns-config-ws.age;
-    "nextdns-config-stamp-ws".file = ../secrets/nextdns-config-stamp-ws.age;
-  };
-  # Load secrets
-  nextdnsConfigWSSecret = config.age.secrets."nextdns-config-ws".path;
-  nextdnsConfigWSStampSecret = config.age.secrets."nextdns-config-stamp-ws".path;
+  # Use the secretActivationScript function
+  system.activationScripts.nextdnsConfigWSSecret = secretActivationScript "nextdns-config-ws" config.age.secrets."nextdns-config-ws".path "/etc/dnscrypt-proxy2/nextdns-config-ws" "dnscrypt" "dnscrypt";
+  system.activationScripts.nextdnsConfigWSStampSecret = secretActivationScript "nextdns-config-stamp-ws" config.age.secrets."nextdns-config-stamp-ws".path "/etc/dnscrypt-proxy2/nextdns-config-stamp-ws" "dnscrypt" "dnscrypt";
 in
 {
-  
   systemd.services.dnscrypt-proxy2.serviceConfig = {
     StateDirectory = "dnscrypt-proxy";
   };
 
-  # DNS Config to Nextdns for now
   services.dnscrypt-proxy2 = {
     enable = true;
     settings = {
-      server_names = [ "NextDNS-${nextdnsConfigWSSecret}" ];
+      server_names = [ "NextDNS-@secret@" ];  # Template placeholder
       listen_addresses = [ "[::1]:53" ];
       ipv6_servers = true;
       require_dnssec = true;
 
       static = {
-        "NextDNS-${nextdnsConfigWSSecret}" = {
-          stamp = "${nextdnsConfigWSStampSecret}";
+        "NextDNS-@secret@" = {  # Template placeholder
+          stamp = "@secret@";  # Template placeholder
         };
       };
     };

@@ -7,41 +7,58 @@
     disko.inputs.nixpkgs.follows = "nixpkgs";
     agenix = {
       url = "github:ryantm/agenix";
-      # inputs.nixpkgs.follows = "";
     };
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
   };
 
   outputs = { self, nixpkgs, agenix, hyprland, disko, ... } @ inputs: {
     nixosConfigurations = 
-      # Define common modules
       let
+
+        # Import the secret activation module
+        secretActivationModule = import ./common-modules/secret-activation.nix;
+
+      
         commonModules = [
           ./common-modules/system.nix
           ./common-modules/tailscale.nix
           ./common-modules/security.nix
-          # ./secrets/secrets.nix
-          # disko.nixosModules.disko
+          disko.nixosModules.disko
           agenix.nixosModules.default
-          # {
-          #   environment.systemPackages = [ 
-          #     agenix.packages.x86_64-linux.default 
-          #   ];
-          # }
         ];
+
+        commonSecrets = [
+          { age.secrets = {
+              "tailscale-authkey".file = ./secrets/tailscale-authkey.age;
+            };
+          }
+        ];
+
         hypervisorModules = [
           ./hypervisors/hv-modules/hv-users.nix
           ./hypervisors/hv-modules/hv-base.nix
         ];
+
         hypervisorNvidiaModules = [
           ./hypervisors/hv-modules/hv-nvidia.nix
         ];
+
         firewallModules = [
           ./hypervisors/hv-modules/hv-firewall.nix
         ];
+
+        firewallSecrets = [
+          { age.secrets = {
+              "wan-gateway".file = ./secrets/wan-gateway.age;
+              "public-ip-1".file = ./secrets/public-ip-1.age;
+            };
+          }
+        ];
+
         k3sModules = [
           ./hypervisors/hv-modules/hv-k3s.nix
         ];
+
         workstationModules = [
           ./workstations/ws-modules/ws-users.nix
           ./workstations/ws-modules/ws-network.nix
@@ -51,17 +68,27 @@
           ./workstations/ws-modules/services/firefox.nix
           ./workstations/ws-modules/services/syncthing.nix
         ];
+
+        workstationSecrets = [
+          { age.secrets = {
+              "nextdns-config-ws".file = ./secrets/nextdns-config-ws.age;
+              "nextdns-config-stamp-ws".file = ./secrets/nextdns-config-stamp-ws.age;
+            };
+          }
+        ];
+
         workstationNvidiaModules = [
           ./workstations/ws-modules/ws-nvidia.nix
         ];
+
       in
       {
         hv-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
-          modules = commonModules ++ hypervisorModules ++ firewallModules ++ k3sModules ++ hypervisorNvidiaModules ++ [
+          modules = commonModules ++ commonSecrets ++ hypervisorModules ++ firewallModules ++ firewallSecrets ++ k3sModules ++ hypervisorNvidiaModules ++ [
             ./hypervisors/hv-2/hv-2.nix
-            ({ pkgs, config, lib, ... }: {
+            ({ pkgs, config, lib, secretActivationScript,... }: {
               config = {
                 hv-Firewall.vrrpPriority = {
                   WAN_VIP = 90;
@@ -84,13 +111,14 @@
             })
           ];
         };
+
         ws-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
-          modules = commonModules ++ workstationModules ++ workstationModules ++ [
+          modules = commonModules ++ commonSecrets ++ workstationModules ++ workstationSecrets ++ [
             ./workstations/ws-1/ws-1.nix
             ./workstations/ws-1/ws-1-hardware.nix
-            ({ pkgs, config, lib, ... }: {
+            ({ pkgs, config, lib, secretActivationScript, ... }: {
               config = {
                 tailscale = {
                   enable = true;
