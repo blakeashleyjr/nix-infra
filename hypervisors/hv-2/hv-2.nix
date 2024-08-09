@@ -4,7 +4,9 @@
     (modulesPath + "/profiles/qemu-guest.nix")
     ./hv-2-disk-config.nix
   ];
-
+  # Version specification
+  system.stateVersion = "23.11"; # Don't change
+  
   # Define the hostname
   networking.hostName = "hv-2";
   networking = {

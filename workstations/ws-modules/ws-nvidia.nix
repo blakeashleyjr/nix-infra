@@ -20,10 +20,13 @@
   # Load Nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # Enable Nvidia for Docker
+  virtualisation.docker.enableNvidia = true;
+
 	boot = {
 		extraModulePackages = [ config.boot.kernelPackages.nvidia_x11_beta ];
 		initrd.kernelModules = [ "nvidia" ];
-		kernelParams = [ "nvidia.NVreg_PreserveVideoMemoryAllocations=1" ];
+		kernelParams = [ "nvidia.NVreg_PreserveVideoMemoryAllocations=1" "quiet" "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1" ]
 	};
 
 }

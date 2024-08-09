@@ -1,10 +1,6 @@
 { config, pkgs, inputs, ... }:
 
 {
-  # Security settings
-  security.pam.services.waylock = {
-    text = "auth include login";
-  };
 
   # Enable cache for Hyprland to speed up builds
   nix.settings = {
@@ -20,13 +16,10 @@
   
   # System package inclusion for a comprehensive desktop environment
   environment.systemPackages = with pkgs; [
-    rofi-wayland
     wlsunset
     wl-clipboard
     waybar
     libsForQt5.qt5ct
-    # hyprland-protocols
-    # hyprland-per-window-layout
     xdg-desktop-portal-hyprland
     nwg-displays
     grimblast
@@ -86,55 +79,56 @@
     pulse.enable = true;
   };
 
-  systemd.timers."random-wallpaper" = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "5min";
-      OnUnitActiveSec = "5min";
-      Unit = "random-wallpaper.service";
-    };
-  };
+#   systemd.timers."random-wallpaper" = {
+#     wantedBy = [ "timers.target" ];
+#     timerConfig = {
+#       OnBootSec = "5min";
+#       OnUnitActiveSec = "5min";
+#       Unit = "random-wallpaper.service";
+#     };
+#   };
 
-  systemd.services."random-wallpaper" = {
-    script = ''
-      /run/current-system/sw/bin/fish /home/blake/scripts/set_random_wallpaper.fish
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      Environment = [
-        "WAYLAND_DISPLAY=wayland-1"
-        "XDG_RUNTIME_DIR=/run/user/1000/"
-        "XDG_SESSION_TYPE=wayland"
-        "DISPLAY=:1"
-        "DESKTOP_SESSION=hyprland"
-        "XDG_BACKEND=wayland"
-        "XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session1"
-        "XDG_SESSION_TYPE=wayland"
-      ];
-      User = "blake";
-    };
-    wantedBy = [ "default.target" ];
-  };
+#   systemd.services."random-wallpaper" = {
+#     script = ''
+#       /run/current-system/sw/bin/fish /home/blake/scripts/set_random_wallpaper.fish
+#     '';
+#     serviceConfig = {
+#       Type = "oneshot";
+#       Environment = [
+#         "WAYLAND_DISPLAY=wayland-1"
+#         "XDG_RUNTIME_DIR=/run/user/1000/"
+#         "XDG_SESSION_TYPE=wayland"
+#         "DISPLAY=:1"
+#         "DESKTOP_SESSION=hyprland"
+#         "XDG_BACKEND=wayland"
+#         "XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session1"
+#         "XDG_SESSION_TYPE=wayland"
+#       ];
+#       User = "blake";
+#     };
+#     wantedBy = [ "default.target" ];
+#   };
 
- # Change Hyprland gaps every 30 minutes to protect oled
- systemd.timers."gaps-random" = {
-   wantedBy = [ "timers.target" ];
-   timerConfig = {
-     OnBootSec = "30min";
-     OnUnitActiveSec = "30min";
-     Unit = "gaps-random.service";
-   };
- };
+#  # Change Hyprland gaps every 30 minutes to protect oled
+#  systemd.timers."gaps-random" = {
+#    wantedBy = [ "timers.target" ];
+#    timerConfig = {
+#      OnBootSec = "30min";
+#      OnUnitActiveSec = "30min";
+#      Unit = "gaps-random.service";
+#    };
+#  };
 
- systemd.services."gaps-random" = {
-   script = ''
-     /run/current-system/sw/bin/fish /home/blake/scripts/set_random_gaps.fish
-   '';
-   serviceConfig = {
-     Type = "oneshot";
-     User = "blake";
-   };
- };
+#  systemd.services."gaps-random" = {
+#    script = ''
+#      /run/current-system/sw/bin/fish /home/blake/scripts/set_random_gaps.fish
+#    '';
+#    serviceConfig = {
+#      Type = "oneshot";
+#      User = "blake";
+#    };
+#  };
+
   # Enable and configure the GPG agent
   programs.gnupg.agent = {
     enable = true;

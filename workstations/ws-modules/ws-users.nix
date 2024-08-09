@@ -4,7 +4,7 @@
     isNormalUser = true;
     description = "Blake";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker"];
     packages = with pkgs; [
       firefox
       thunderbird
@@ -70,14 +70,6 @@
 
   programs.fish.enable = true;
 
-  environment.systemPackages = with pkgs; [
-
-    ncdu
-    go
-    php
-    rclone
-  ];
-
   # Global Git configuration
   programs.git = {
     enable = true;
@@ -95,57 +87,46 @@
     };
   };
 
-  # Pushes updates to dotfiles every 1 minutes
-  systemd.timers."update-dotfiles" = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "1min";
-      OnUnitActiveSec = "30min";
-      Unit = "update-dotfiles.service";
-    };
-  };
+  # # Pushes updates to dotfiles every 1 minutes
+  # systemd.timers."update-dotfiles" = {
+  #   wantedBy = [ "timers.target" ];
+  #   timerConfig = {
+  #     OnBootSec = "1min";
+  #     OnUnitActiveSec = "30min";
+  #     Unit = "update-dotfiles.service";
+  #   };
+  # };
 
-  systemd.services."update-dotfiles" = {
-    script = ''
-      /run/current-system/sw/bin/fish /home/blake/scripts/update-dotfiles.fish
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      User = "blake";
-    };
-  };
+  # systemd.services."update-dotfiles" = {
+  #   script = ''
+  #     /run/current-system/sw/bin/fish /home/blake/scripts/update-dotfiles.fish
+  #   '';
+  #   serviceConfig = {
+  #     Type = "oneshot";
+  #     User = "blake";
+  #   };
+  # };
 
 
-   # Update the system ever hour
-    systemd.timers."update-system" = {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnBootSec = "60min";
-        OnUnitActiveSec = "60min";
-        Unit = "update-system.service";
-      };
-    };
+  #  # Update the system ever hour
+  #   systemd.timers."update-system" = {
+  #     wantedBy = [ "timers.target" ];
+  #     timerConfig = {
+  #       OnBootSec = "60min";
+  #       OnUnitActiveSec = "60min";
+  #       Unit = "update-system.service";
+  #     };
+  #   };
 
-    systemd.services."update-system" = {
-      script = ''
-        /run/current-system/sw/bin/fish /home/blake/scripts/update-system.fish
-      '';
-      serviceConfig = {
-        Type = "oneshot";
-        User = "blake";
-      };
-    };
+  #   systemd.services."update-system" = {
+  #     script = ''
+  #       /run/current-system/sw/bin/fish /home/blake/scripts/update-system.fish
+  #     '';
+  #     serviceConfig = {
+  #       Type = "oneshot";
+  #       User = "blake";
+  #     };
+  #   };
 
-  # Enable and configure the GPG agent
-  programs.gnupg.agent = {
-    enable = true;
-    settings = {
-      default-cache-ttl = 86400;
-      max-cache-ttl = 86400;
-    };
-    enableSSHSupport = true;
-    enableExtraSocket = true;
-    enableBrowserSocket = true;
-  };
 
 }

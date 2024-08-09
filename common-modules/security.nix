@@ -112,11 +112,6 @@ with lib;
 
   systemd.coredump.enable = false; # Disable core dumps to prevent information leakage.
 
-  # enable antivirus clamav and
-  # keep the signatures' database updated
-  services.clamav.daemon.enable = true;
-  services.clamav.updater.enable = true;
-
   # Note: Some settings are deliberately set with `mkDefault` or `mkOverride` to ensure they take precedence or allow user overrides.
 
   ## Per-App systemd hardening:

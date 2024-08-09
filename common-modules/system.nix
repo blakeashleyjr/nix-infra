@@ -1,22 +1,27 @@
 { pkgs, lib, ... }:
 {
-  # Version specification
-  system.stateVersion = "23.11"; # Don't change
 
   # Define all secrets
   age.secrets = {
     "tailscale-authkey".file = ../secrets/tailscale-authkey.age;
     "wan-gateway".file = ../secrets/wan-gateway.age; # defined in the network configuration
     "public-ip-1".file = ../secrets/public-ip-1.age; # defined in the network configuration
-    # Add additional secrets as necessary
+    "nextdns-config-ws.age".file = ../secrets/nextdns-config-ws.age;
+    "nextdns-config-stamp-ws.age".file = ../secrets/nextdns-config-stamp-ws.age;
   };
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.useOSProber = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # System update configuration
+  system.autoUpgrade.enable = false;
+  system.autoUpgrade.allowReboot = false;
+  
   # Allow unfree
   nixpkgs.config.allowUnfree = true;
+  nix.settings.auto-optimise-store = true;
 
   environment.systemPackages = with pkgs; [
     # System management and orchestration

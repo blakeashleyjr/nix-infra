@@ -8,9 +8,8 @@ let
   hv-2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFq0waQeGTownYGJtNHazTydCqSxlyMGh+pjsh8HHsL9 root@nixos";
 
   ## workstations
+  ws-1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMTpZxMw+ekulU1DRawmlf6ZMgZXtrezzpw6fAa2/K1X root@nixos";
 
-  ## workstations
-  ws-1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK29aC0ZvTjltZcJkPHSGn01Zlhywr1QJZVtKQ8U3YU1 ws-1@workstation";
   users = [ blake ];
   hv = [ hv-2 ];
   ws = [ ws-1 ];
