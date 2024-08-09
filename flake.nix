@@ -23,6 +23,7 @@
           ./common-modules/system.nix
           ./common-modules/tailscale.nix
           ./common-modules/security.nix
+          ./common-modules/secret-activation.nix
           disko.nixosModules.disko
           agenix.nixosModules.default
         ];
@@ -88,7 +89,7 @@
           specialArgs = { inherit inputs; };
           modules = commonModules ++ commonSecrets ++ hypervisorModules ++ firewallModules ++ firewallSecrets ++ k3sModules ++ hypervisorNvidiaModules ++ [
             ./hypervisors/hv-2/hv-2.nix
-            ({ pkgs, config, lib, secretActivationScript,... }: {
+            ({ pkgs, config, lib, ... }: {
               config = {
                 hv-Firewall.vrrpPriority = {
                   WAN_VIP = 90;
@@ -118,7 +119,7 @@
           modules = commonModules ++ commonSecrets ++ workstationModules ++ workstationSecrets ++ [
             ./workstations/ws-1/ws-1.nix
             ./workstations/ws-1/ws-1-hardware.nix
-            ({ pkgs, config, lib, secretActivationScript, ... }: {
+            ({ pkgs, config, lib, ... }: {
               config = {
                 tailscale = {
                   enable = true;

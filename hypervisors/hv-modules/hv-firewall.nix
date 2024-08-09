@@ -1,4 +1,4 @@
-{ config, lib, pkgs, secretActivationScript, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.services.keepalived;
@@ -133,8 +133,29 @@ in
     };
 
     # Use the secretActivationScript function to manage secrets
-    system.activationScripts.wanGatewaySecret = secretActivationScript "wan-gateway" wanGatewaySecret "/run/keepalived/wan-gateway" "keepalived_script" "keepalived_script";
-    system.activationScripts.publicIp1Secret = secretActivationScript "public-ip-1" publicIp1Secret "/run/keepalived/public-ip-1" "keepalived_script" "keepalived_script";
+    system.activationScripts.wanGatewaySecret.text = config.secretActivationScript 
+      "wan-gateway" 
+      config.age.secrets."wan-gateway".path
+      "/run/keepalived/wan-gateway" 
+      "keepalived_script" 
+      "keepalived_script";
+
+    system.activationScripts.publicIp1Secret.text = config.secretActivationScript 
+      "public-ip-1" 
+      config.age.secrets."public-ip-1".path
+      "/run/keepalived/public-ip-1" 
+      "keepalived_script" 
+      "keepalived_script";
+
+    # Create the /run/keepalived directory with proper permissions
+    system.activationScripts.keepalivedDir = {
+      text = ''
+        mkdir -p /run/keepalived
+        chown keepalived_script:keepalived_script /run/keepalived
+        chmod 0750 /run/keepalived
+      '';
+      deps = [];
+    };
 
     services.dnscrypt-proxy2 = {
       enable = true;
@@ -173,26 +194,7 @@ in
 
     users.groups.keepalived_script = { };
 
-    systemd.services.keepalived-secrets = {
-      description = "Prepare secrets for Keepalived";
-      before = [ "keepalived.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "root";
-        Group = "root";
-        ExecStart = pkgs.writeScript "keepalived-secrets.sh" ''
-          #!/bin/sh
-          mkdir -p /run/keepalived
-          chown keepalived_script:keepalived_script /run/keepalived
-          chmod 0700 /run/keepalived
-          echo "PUBLIC_IP_1=$(cat /run/keepalived/public-ip-1)" > /run/keepalived/secrets
-          chown keepalived_script:keepalived_script /run/keepalived/secrets
-          chmod 0600 /run/keepalived/secrets
-        '';
-      };
-    };
-
+   # Simplified keepalived-scripts service
     systemd.services.keepalived-scripts = {
       description = "Prepare scripts for Keepalived";
       before = [ "keepalived.service" ];
@@ -203,9 +205,6 @@ in
         Group = "root";
         ExecStart = pkgs.writeScript "keepalived-scripts.sh" ''
           #!/bin/sh
-          mkdir -p /run/keepalived
-          chown keepalived_script:keepalived_script /run/keepalived
-          chmod 0750 /run/keepalived
           echo '${pkgs.writeScript "add-gateway.sh" ''
             #!/bin/sh
             WAN_GATEWAY_IP=$(cat /run/keepalived/wan-gateway)  

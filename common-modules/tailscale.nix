@@ -1,9 +1,7 @@
-{ config, pkgs, lib, secretActivationScript, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   isEnabled = config.tailscale.enable;
-
-  # Use the secretActivationScript function
   tailscaleAuthKeyPath = "/run/tailscale/authkey";
 in
 {
@@ -152,7 +150,12 @@ in
   config = lib.mkIf isEnabled {
 
     # Use the secretActivationScript function to manage the Tailscale auth key
-    system.activationScripts.tailscaleAuthKey = secretActivationScript "tailscale-authkey" config.age.secrets."tailscale-authkey".path tailscaleAuthKeyPath "tailscale" "tailscale";
+    system.activationScripts.tailscaleAuthKey.text = config.secretActivationScript 
+      "tailscale-authkey" 
+      config.age.secrets."tailscale-authkey".path 
+      tailscaleAuthKeyPath 
+      "tailscale" 
+      "tailscale";
 
     environment.systemPackages = [ pkgs.tailscale ];
 
@@ -160,7 +163,7 @@ in
 
     systemd.services.tailscale-autoconnect = {
       description = "Automatic connection to Tailscale";
-      after = [ "network-online.target" "tailscaled.service" ]; # Ensure tailscaled is started and network is online
+      after = [ "network-online.target" "tailscaled.service" ];
       wants = [ "network-online.target" "tailscaled.service" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig.Type = "oneshot";

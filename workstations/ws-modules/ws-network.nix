@@ -1,10 +1,17 @@
-{ config, lib, pkgs, secretActivationScript, ... } @ args:
+# ws-network.nix
+{ config, lib, pkgs, ... }:
+
 let
   # Use the secretActivationScript function
-  system.activationScripts.nextdnsConfigWSSecret = secretActivationScript "nextdns-config-ws" config.age.secrets."nextdns-config-ws".path "/etc/dnscrypt-proxy2/nextdns-config-ws" "dnscrypt" "dnscrypt";
-  system.activationScripts.nextdnsConfigWSStampSecret = secretActivationScript "nextdns-config-stamp-ws" config.age.secrets."nextdns-config-stamp-ws".path "/etc/dnscrypt-proxy2/nextdns-config-stamp-ws" "dnscrypt" "dnscrypt";
+  nextdnsConfigWSSecret = config.secretActivationScript "nextdns-config-ws" config.age.secrets."nextdns-config-ws".path "/etc/dnscrypt-proxy2/nextdns-config-ws" "dnscrypt" "dnscrypt";
+  nextdnsConfigWSStampSecret = config.secretActivationScript "nextdns-config-stamp-ws" config.age.secrets."nextdns-config-stamp-ws".path "/etc/dnscrypt-proxy2/nextdns-config-stamp-ws" "dnscrypt" "dnscrypt";
 in
 {
+  system.activationScripts = {
+    nextdnsConfigWSSecret.text = nextdnsConfigWSSecret;
+    nextdnsConfigWSStampSecret.text = nextdnsConfigWSStampSecret;
+  };
+
   systemd.services.dnscrypt-proxy2.serviceConfig = {
     StateDirectory = "dnscrypt-proxy";
   };
